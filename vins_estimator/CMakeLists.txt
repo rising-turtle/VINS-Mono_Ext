@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vins_estimator)
+project(vins_estimator_ext)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11")
@@ -31,7 +31,7 @@ include_directories(
 
 catkin_package()
 
-add_executable(vins_estimator
+add_executable(vins_estimator_ext
     src/estimator_node.cpp
     src/parameters.cpp
     src/estimator.cpp
@@ -61,6 +61,6 @@ add_executable(vins_estimator
     )
 
 
-target_link_libraries(vins_estimator ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES}) 
+target_link_libraries(vins_estimator_ext ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES}) 
 
 

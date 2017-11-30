@@ -1,0 +1,17 @@
+<launch>
+    <arg name="input_traj_log" default = "/home/davidz/work/ros/indigo/src/vslam_node/VINS-mono/result/ETAS_F2_640_30.csv"/>  <!-- DC1.csv -->
+
+    <!-- arg name="input_img_directory" default = "/home/davidz/work/data/DC1" /-->
+    <arg name="input_img_directory" default = "/media/davidz/LingqiuHD/he zhang/Dataset_d/ETAS_2F_640_30" />
+
+    <arg name="output_map_ply" default = "ETAS_F2_640_30_map.ply" /> <!-- DC1_map.ply -->
+    <arg name="output_traj_ply" default = "ETAS_F2_640_30_trajectory.ply"/> <!-- DC1_trajectory.ply -->
+
+    <node name="vslam_vins" pkg="vslam_vins" type="vins-mapping" output="screen">
+        <param name="input_traj_log" type="string" value="$(arg input_traj_log)" />
+        <param name="input_img_directory" type="string" value="$(arg input_img_directory)" />
+        <param name="output_map_ply" type="string" value="$(arg output_map_ply)"/>
+        <param name="output_traj_ply" type="string" value="$(arg output_traj_ply)"/>
+    </node>
+
+</launch>

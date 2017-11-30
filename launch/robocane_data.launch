@@ -1,0 +1,18 @@
+<launch>
+    <arg name="vins_folder" default = "/home/davidz/work/ros/indigo/src/vslam_node/VINS-mono"/>
+    <arg name="config_path" default = "$(arg vins_folder)/config/robocane_config.yaml" />
+    <arg name="vins_path" default = "$(arg vins_folder)/" />
+    
+   <include file="vins_rviz.launch"/>
+
+    <node name="feature_tracker" pkg="feature_tracker" type="feature_tracker" output="log">
+        <param name="config_file" type="string" value="$(arg config_path)" />
+        <param name="vins_folder" type="string" value="$(arg vins_path)" />
+    </node>
+
+    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <param name="vins_folder" type="string" value="$(arg vins_path)" />
+    </node>
+
+</launch>

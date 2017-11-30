@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>feature_tracker</name>
+  <name>feature_tracker_ext</name>
   <version>0.0.0</version>
   <description>The feature_tracker package</description>
 
