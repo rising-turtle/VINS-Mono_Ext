@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(feature_tracker_ext)
 
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS "-std=c++11")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -w -mssse3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -mssse3")
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -35,3 +35,5 @@ add_executable(feature_tracker_ext
     )
 
 target_link_libraries(feature_tracker_ext ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_subdirectory(freak)
