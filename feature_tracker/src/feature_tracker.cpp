@@ -32,6 +32,8 @@ FeatureTracker::FeatureTracker()
 {
 }
 
+FeatureTracker::~FeatureTracker(){}
+
 void FeatureTracker::setMask()
 {
     if(FISHEYE)

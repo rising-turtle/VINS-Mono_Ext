@@ -18,6 +18,10 @@ int FOCAL_LENGTH;
 int FISHEYE;
 bool PUB_THIS_FRAME;
 
+// added 
+double FEATURE_SIZE; 
+double NEW_KF_THRESHOLD = 0.7; // percentage thresold to decide New KF
+
 template <typename T>
 T readParam(ros::NodeHandle &n, std::string name)
 {
@@ -64,6 +68,10 @@ void readParameters(ros::NodeHandle &n)
     STEREO_TRACK = false;
     FOCAL_LENGTH = 460;
     PUB_THIS_FRAME = false;
+
+    FEATURE_SIZE = fsSettings["feature_size"]; 
+    if(FEATURE_SIZE < 1)
+	FEATURE_SIZE = 24.;
 
     if (FREQ == 0)
         FREQ = 100;

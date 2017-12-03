@@ -18,31 +18,12 @@ mpFTracker(ftracker),
 mPubCnt(0), 
 mbFirstImgFlag(true)
 {
-    ros::NodeHandle n; 
+    ros::NodeHandle n("~"); 
     mPubImg = n.advertise<sensor_msgs::PointCloud>("feature", 1000);
     mPubMatch = n.advertise<sensor_msgs::Image>("feature_img",1000);
 }
 CFrontend::~CFrontend()
 {}
-
-namespace{
-    
-    template <typename T>
-	T readParam(ros::NodeHandle &n, std::string name)
-	{
-	    T ans;
-	    if (n.getParam(name, ans))
-	    {
-		ROS_INFO_STREAM("Loaded " << name << ": " << ans);
-	    }
-	    else
-	    {
-		ROS_ERROR_STREAM("Failed to load " << name);
-		n.shutdown();
-	    }
-	    return ans;
-	}
-}
 
 void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
 {
@@ -65,7 +46,6 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     }
     else
 	PUB_THIS_FRAME = false; 
-	// mbPubThisFrame = false;
 
     cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
     cv::Mat show_img = ptr->image;

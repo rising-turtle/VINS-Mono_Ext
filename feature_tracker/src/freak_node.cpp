@@ -15,15 +15,18 @@
 #include <message_filters/subscriber.h>
 #include "parameters.h"
 #include "frontend.h"
-#include "feature_tracker.h"
+// #include "feature_tracker.h"
+#include "freak_tracker.h"
 
-FeatureTracker trackerData[NUM_OF_CAM];
+// FeatureTracker trackerData[NUM_OF_CAM];
+CFreakTracker trackerData[NUM_OF_CAM]; 
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "freak_tracker");
     ros::NodeHandle n("~");
-    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
     readParameters(n);
 
     for (int i = 0; i < NUM_OF_CAM; i++)

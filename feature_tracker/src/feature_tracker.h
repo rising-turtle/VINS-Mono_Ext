@@ -29,8 +29,9 @@ class FeatureTracker
 {
   public:
     FeatureTracker();
+    virtual ~FeatureTracker();
 
-    void readImage(const cv::Mat &_img);
+    virtual void readImage(const cv::Mat &_img);
 
     void setMask();
 

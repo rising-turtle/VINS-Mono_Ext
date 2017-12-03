@@ -23,4 +23,8 @@ extern int EQUALIZE;
 extern int FISHEYE;
 extern bool PUB_THIS_FRAME;
 
+// added 
+extern double FEATURE_SIZE;  //	default feature size for calculating discriptor 
+extern double NEW_KF_THRESHOLD; // threshold to create new KF 
+
 void readParameters(ros::NodeHandle &n);
