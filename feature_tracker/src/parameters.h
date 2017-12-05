@@ -26,5 +26,7 @@ extern bool PUB_THIS_FRAME;
 // added 
 extern double FEATURE_SIZE;  //	default feature size for calculating discriptor 
 extern double NEW_KF_THRESHOLD; // threshold to create new KF 
+extern int LEAST_NUM_FOR_PNP;  // Least matches for start PnP 
+extern int TRACKED_ENOUGH_FEATURE; // threhold to decide whether enough feature has been tracked 
 
 void readParameters(ros::NodeHandle &n);

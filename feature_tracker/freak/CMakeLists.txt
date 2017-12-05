@@ -21,3 +21,7 @@ set( freak_HDRS
 
 add_library( freak SHARED ${freak_SRCS} ${freak_HDRS} )
 target_link_libraries( freak ${OpenCV_LIBS} )
+
+# add_executable(freak_demo freak_demo.cpp)
+# target_link_libraries(freak_demo freak_p ${OpenCV_LIBS})
+
