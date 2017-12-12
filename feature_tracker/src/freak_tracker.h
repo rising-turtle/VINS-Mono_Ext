@@ -8,7 +8,7 @@
 #pragma once
 
 #include <vector>
-#include <queue>
+#include <deque>
 #include "feature_tracker.h"
 
 class CKeyFrame; 
@@ -23,19 +23,18 @@ public:
     // yet, extract feature using good_feature_to_track
     void readImage(const cv::Mat & _img); 
 
+    // KeyFrame operation 
     // check out whether a new key frame is needed 
     bool needNewKeyFrame();  
     CKeyFrame* createNewKeyFrame(); 
-    
-    // match between keyframes 
-    void matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew); 
-
-    std::queue<CKeyFrame*> mqKFs; // queue to store KFs
-
-    // TODO:
+    int matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew); 
     void addKeyFrame(CKeyFrame*); 
+    void removeOldKeyFrame();
+    bool noKeyFrame();
+	
     CKeyFrame* mpLastKF; 
-protected:
+    std::deque<CKeyFrame*> mqKFs; // queue to store KFs
+
     // match features according to tracked set of features 
     std::vector<cv::DMatch> findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, std::vector<cv::DMatch>& m_tracked,
 						   std::vector<cv::Point2f>& old_pts, cv::Mat& old_desc, 
@@ -49,7 +48,12 @@ protected:
     std::vector<cv::DMatch> matchDesc(cv::Mat& train_desc, cv::Mat& query_desc);
     
     // match the new added points with those in the last keyframe 
-    void checkNewPoints(); 
+    int checkNewPoints(); 
+
+    // record the track number of each feature
+    static std::vector<int> gvIdTNum;
+    bool mbNewKF; // Whether a new KF is created 
+    bool updateIDWithKF(int i); 
 
 private:
     // compute epipolar error given Fundamental matrix 

@@ -44,6 +44,7 @@ T readParam(ros::NodeHandle &n, std::string name)
     return ans;
 }
 
+
 void readParameters(ros::NodeHandle &n)
 {
     std::string config_file;

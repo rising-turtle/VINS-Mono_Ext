@@ -18,11 +18,6 @@ CKeyFrame::~CKeyFrame(){}
 void CKeyFrame::describe(cv::Mat& img, vector<cv::KeyPoint>& kpts, cv::Mat& desc)
 {
     cv_ext::FREAK extractor; 
-#if CV_SSSE3
-    cv::BruteForceMatcher< cv::HammingSeg<30,4> > matcher;
-#else 
-    cv::BruteForceMatcher<cv::Hamming> matcher; 
-#endif
     // extractor.compute(mImg, mvKPts, mDiscriptor); 
     desc = cv::Mat(); 
     extractor.compute(img, kpts, desc); 

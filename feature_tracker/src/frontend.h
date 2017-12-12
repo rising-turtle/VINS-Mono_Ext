@@ -39,7 +39,7 @@ public:
     // parameters 
     double mFirstImgTime ; 
     bool mbFirstImgFlag;
-    // bool mbShowTrack;	// whether to publish img with tracked feature for display
+    bool mbShowTrack;	// whether to publish img with tracked feature for display
     // int mWinSize; 		// number of nodes in the window, outside nodes are marginalized 
     
     // publisher 

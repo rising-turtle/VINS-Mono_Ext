@@ -20,9 +20,10 @@ bool PUB_THIS_FRAME;
 
 // added 
 double FEATURE_SIZE; 
-double NEW_KF_THRESHOLD = 0.7; // percentage thresold to decide New KF
+double NEW_KF_THRESHOLD = 0.5; // percentage thresold to decide New KF
 int LEAST_NUM_FOR_PNP = 8;  // Least matches for start PnP 
 int TRACKED_ENOUGH_FEATURE = 40; // 
+ int MAX_NUM_KFS = 3;
 
 template <typename T>
 T readParam(ros::NodeHandle &n, std::string name)

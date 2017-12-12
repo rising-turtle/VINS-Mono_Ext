@@ -12,11 +12,13 @@
 #include <cv_bridge/cv_bridge.h>
 #include "frontend.h"
 #include "feature_tracker.h"
+#include "freak_tracker.h"
 
 CFrontend::CFrontend(FeatureTracker* ftracker) : 
 mpFTracker(ftracker),
 mPubCnt(0), 
-mbFirstImgFlag(true)
+mbFirstImgFlag(true),
+mbShowTrack(false)
 {
     ros::NodeHandle n("~"); 
     mPubImg = n.advertise<sensor_msgs::PointCloud>("feature", 1000);
@@ -58,7 +60,8 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     for (unsigned int i = 0;; i++)
     {
 	bool completed = false;
-	completed |= mpFTracker->updateID(i);
+	// completed |= mpFTracker->updateID(i);
+	completed |= ((CFreakTracker*)mpFTracker)->updateIDWithKF(i);
 	if (!completed)
 	    break;
     }
@@ -127,10 +130,12 @@ void CFrontend::pubCurFrame(const sensor_msgs::ImageConstPtr& img_msg)
 	    //sprintf(name, "%d", trackerData[i].ids[j]);
 	    //cv::putText(tmp_img, name, trackerData[i].cur_pts[j], cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
 	}
-	/*
+	if(mbShowTrack)
+	{
+	   cv::namedWindow("vis", CV_WINDOW_KEEPRATIO); 
 	   cv::imshow("vis", stereo_img);
 	   cv::waitKey(5);
-	   */
+	}
 	// pub_match.publish(ptr->toImageMsg());
 	mPubMatch.publish(ptr->toImageMsg());
     }
