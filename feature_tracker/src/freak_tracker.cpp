@@ -58,6 +58,68 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     vector<cv::DMatch> matches; 
     if(pnew->mUnTracked < LEAST_NUM_FOR_PNP) 
 	return 0; 
+    // check out how many features are already matched 
+    vector<cv::DMatch> v_tracked; 
+    v_tracked.reserve(pold->mIds.size());
+    vector<bool> old_matched(pold->mIds.size(), 0); 
+    vector<bool> new_matched(pnew->mIds.size(), 0);
+	
+    for(int i=0; i<pold->mIds.size(); i++)
+    {
+	int id = pold->mIds[i];
+	bool tracked = false; 
+	assert(id != -1); 
+	for(int j=0; j<pnew->mIds.size(); j++)
+	{
+	    if(pnew->mIds[j] == id)
+	    {
+		tracked = true; 
+		cv::DMatch m; 
+		m.trainIdx = i; 
+		m.queryIdx = j; 
+		v_tracked.push_back(m);
+		old_matched[i] = 1; 
+		new_matched[j] = 1;
+		break;
+	    }
+	}
+    }
+    
+    // match the unmatched features 
+    vector<DMatch> new_matches; 
+    if(v_tracked.size() >= TRACKED_ENOUGH_FEATURE) // 
+    {
+       ROS_DEBUG("findMatchByTracked"); 
+	TicToc t_fmbt;
+	new_matches = findMatchByTracked(pold, pnew, v_tracked, old_matched); 
+	ROS_DEBUG("findMatchByTracked cost %f ms, find %d new_matches", t_fmbt.toc(), new_matches.size()); 
+    }else{
+       ROS_DEBUG("findMatchByPnP"); 
+	TicToc t_fmpp;
+	new_matches = findMatchByPnP(pold, pnew, old_matched, new_matched); 
+	ROS_DEBUG("findMatchByPnP cost %f ms, find %d new_matches", t_fmpp.toc(), new_matches.size());
+    }
+    
+    // update newKeyFrame 
+    int ret = 0;
+    for(int i=0; i<new_matches.size(); i++)
+    {
+	DMatch& m = new_matches[i]; 
+	assert(pnew->mIds[m.queryIdx] == -1);
+	assert(pold->mIds[m.trainIdx] != -1); 
+	pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
+	pnew->mUnTracked--;
+	ret++;
+    }
+    return ret;
+}
+
+/*
+int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
+{
+    vector<cv::DMatch> matches; 
+    if(pnew->mUnTracked < LEAST_NUM_FOR_PNP) 
+	return 0; 
     cv::Mat descOld = pold->mDiscriptor.clone(); 
     cv::Mat descNew = pnew->mDiscriptor.clone(); 
 
@@ -76,7 +138,7 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     }
     new_pts.resize(k); 
     nIdMap.resize(k); 
-    cv::resize(descNew, descNew, cv::Size(k, descNew.cols)); // resize to k row 
+    cv::resize(descNew, descNew, cv::Size(descNew.cols, k)); // resize to k row, cv::Size(width, height) 
     
     // extract features from old keyframe that have not been tracked in new keyframe 
     vector<int> oIdMap(pold->mIds.size());
@@ -114,7 +176,7 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     
     oIdMap.resize(k); 
     old_pts.resize(k); 
-    cv::resize(descOld, descOld, cv::Size(k, descOld.cols)); // 
+    cv::resize(descOld, descOld, cv::Size(descOld.cols, k )); // cv::Size(width, height)
     
     // match the unmatched features 
     vector<DMatch> new_matches; 
@@ -143,8 +205,107 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
 	ret++;
     }
     return ret;
+}*/
+
+std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, vector<cv::DMatch>& m_tracked,
+						    vector<bool>& old_matched)
+{
+    vector<DMatch> ret;
+    // compute F matrix given tracked features  
+    vector<Point2f> ot_pts, nt_pts;
+    ot_pts.resize(m_tracked.size()); 
+    nt_pts.resize(m_tracked.size()); 
+    for(int i=0; i<m_tracked.size(); i++)
+    {
+	DMatch& m = m_tracked[i]; 
+	ot_pts[i] = pold->mvKPts[m.trainIdx].pt; 
+	nt_pts[i] = pnew->mvKPts[m.queryIdx].pt; 
+    }
+    Mat F_model = cv::findFundamentalMat(ot_pts, nt_pts, cv::FM_8POINT); 
+
+    // compute search radius 
+    float l = maxDisparity(ot_pts, nt_pts); 
+    l *= 1.5; 
+    float l_sqr = l * l;
+	
+    // collect points have not been matched in pold and pnew 
+    int N = pold->mIds.size(); 
+    vector<Point2f> old_pts(N);
+    vector<int> oIdMap(N);
+    int k = 0; 
+    for(int i=0; i<N; i++)
+    {
+	if(old_matched[i] == false)
+	{
+		old_pts[k] = pold->mvKPts[i].pt; 
+		oIdMap[k++] = i;
+	}
+    }
+    old_pts.resize(k); 
+    oIdMap.resize(k); 
+
+    // collect points have not been matched in pold and pnew 
+    N = pnew->mIds.size();
+    vector<Point2f> new_pts(N);
+    vector<int> nIdMap(N); 
+    k = 0;
+    for(int i=0; i<N; i++)
+    {
+	if(pnew->mIds[i] == -1)
+	{
+		new_pts[k] = pnew->mvKPts[i].pt; 
+		nIdMap[k++] = i;
+	}
+    }
+    new_pts.resize(k); 
+    nIdMap.resize(k);
+
+    const double* F = F_model.ptr<double>();
+
+    // search for matched points 
+    for(int i=0; i<new_pts.size(); i++)
+    {
+	Point2f& p1 = new_pts[i];
+	for(int j=0; j<old_pts.size(); j++)
+	{
+		Point2f& p2 = old_pts[j];
+		float sqr_dis = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y); 
+		if(sqr_dis > l_sqr) // outside search radius 
+			continue; 
+
+		// within search radius, check distance to epipolar line given model F 
+		double a, b, c, d1, d2, s1, s2;
+
+            a = F[0]*p2.x + F[1]*p2.y + F[2];
+            b = F[3]*p2.x + F[4]*p2.y + F[5];
+            c = F[6]*p2.x + F[7]*p2.y + F[8];
+
+            s2 = 1./(a*a + b*b);
+            d2 = p1.x*a + p1.y*b + c;
+
+            a = F[0]*p1.x + F[3]*p1.y + F[6];
+            b = F[1]*p1.x + F[4]*p1.y + F[7];
+            c = F[2]*p1.x + F[5]*p1.y + F[8];
+
+            s1 = 1./(a*a + b*b);
+            d1 = p2.x*a +p2.y*b + c;
+
+            float err = (float)std::max(d1*d1*s1, d2*d2*s2);
+	     if(err <= F_THRESHOLD) // find a good match
+	     {
+	     		DMatch m;
+			m.queryIdx = nIdMap[i]; 
+			m.trainIdx = oIdMap[j];
+			ret.push_back(m);
+			break;
+	     }
+	}
+
+    }
+    return ret; 
 }
 
+/*
 std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, vector<cv::DMatch>& m_tracked,
 						    vector<Point2f>& old_pts, Mat& old_desc, 
 						    vector<Point2f>& new_pts, Mat& new_desc)
@@ -179,7 +340,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
 	   ret.push_back(matches[i]); 
     }
     return ret; 
-}
+}*/
 
 std::vector<cv::DMatch> CFreakTracker::matchDesc(Mat& train_desc, Mat& query_desc)
 {
@@ -193,6 +354,80 @@ std::vector<cv::DMatch> CFreakTracker::matchDesc(Mat& train_desc, Mat& query_des
     return matches; 
 }
 
+std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFrame* pnew, 
+						    vector<bool>& old_matched, vector<bool>& new_matched)
+{
+    vector<DMatch> ret;
+    pnew->describe(); 
+    int N = pnew->mDes2Id.size(); 
+    vector<int> nIdMap(N); 
+    int k =0; 
+    // find out points not been matched in new KF 
+    for(int i=0; i<N; i++)
+    {
+	if(new_matched[pnew->mDes2Id[i]] == false)
+		nIdMap[k++] = i;
+	
+    }
+    if( k < LEAST_NUM_FOR_PNP) return ret; 
+    nIdMap.resize(k); 
+
+    cv::Mat nDesc = pnew->mDiscriptor.clone(); 
+    vector<Point2f> new_pts(k);
+    k =0; 
+    for(int i=0; i<k; i++)
+    {
+	nDesc.row(i) = pnew->mDiscriptor.row(nIdMap[i]);
+	new_pts[i] = pnew->mvKPts[pnew->mDes2Id[nIdMap[i]]].pt;
+    }
+    cv::resize(nDesc, nDesc, cv::Size(nDesc.cols, k)); // cv::Size(Width, Height)
+
+    // find out points not been matched in old KF 
+    pold->describe();
+    N = pold->mDes2Id.size(); 
+    vector<int> oIdMap(N);
+    k = 0 ; 
+    for(int i=0; i<N; i++)
+    {
+	if(old_matched[pold->mDes2Id[i]] == false)
+		oIdMap[k++] = i;
+    }
+    if(k < LEAST_NUM_FOR_PNP) return ret; 
+    oIdMap.resize(k);  
+    
+    cv::Mat oDesc = pnew->mDiscriptor.clone(); 
+    vector<Point2f> old_pts(k);
+    k =0; 
+    for(int i=0; i<k; i++)
+    {
+	oDesc.row(i) = pold->mDiscriptor.row(oIdMap[i]);
+	old_pts[i] = pold->mvKPts[pold->mDes2Id[oIdMap[i]]].pt;
+    }
+    cv::resize(oDesc, oDesc, cv::Size(oDesc.cols, k)); // cv::Size(Width, Height)
+
+    // match 
+    vector<DMatch> matches = matchDesc(oDesc, nDesc); 
+    if(matches.size() < LEAST_NUM_FOR_PNP) return ret; 
+    vector<uchar> status; 
+    cv::Mat F_model = cv::findFundamentalMat(old_pts, new_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
+    ret.resize(matches.size()); 
+    k = 0;
+    for(int i=0; i<status.size(); i++)
+    {
+	if(status[i])
+	{
+	    DMatch m ; 
+	    m.queryIdx = pnew->mDes2Id[nIdMap[matches[i].queryIdx]];
+	    m.trainIdx = pold->mDes2Id[oIdMap[matches[i].trainIdx]];
+	
+	    ret[k++] = m; 
+	}
+    }
+    ret.resize(k); 
+    return ret; 
+}
+
+/*
 std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(vector<Point2f>& old_pts, Mat& old_desc, 
 						    vector<Point2f>& new_pts, Mat& new_desc)
 {
@@ -212,18 +447,34 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(vector<Point2f>& old_pts, 
     }
     ret.resize(k); 
     return ret; 
+}*/
+
+
+float CFreakTracker::maxDisparity(vector<Point2f>& pts1, vector<Point2f>& pts2)
+{
+	assert(pts1.size() == pts2.size()); 
+	float l = 0;
+	for(int i=0; i<pts1.size(); i++)
+	{
+		Point2f& p1 = pts1[i]; 
+		Point2f& p2 = pts2[i]; 
+		float sqr_dis = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y); 
+		if(l < sqr_dis) l = sqr_dis; 
+	}
+	return sqrt(l);
 }
 
+// match the newly added feature point with pts in keyframe 
 int CFreakTracker::checkNewPoints()
 {
-    if(mpLastKF == 0) return 0; 
+ if(mpLastKF == 0) return 0; 
     if(n_pts.size() < LEAST_NUM_FOR_PNP) return 0; 
 
     // 1. find out F model
     vector<KeyPoint> pre_un_pts; 
     pre_un_pts.reserve(mpLastKF->mIds.size()); 
     vector<int> oIdMap(mpLastKF->mIds.size()); 
-    cv::Mat oDesc = mpLastKF->mDiscriptor.clone(); 
+   
     int k = 0; 
 
     vector<Point2f> pre_pts; 
@@ -252,12 +503,131 @@ int CFreakTracker::checkNewPoints()
 	if(!tracked)
 	{
 	    pre_un_pts.push_back(mpLastKF->mvKPts[j]); 
+	    oIdMap[k++] = j; 
+	}
+    }
+    ROS_INFO("find out unmatched %d features ", k);
+    oIdMap.resize(k); 
+    if(pre_pts.size() < LEAST_NUM_FOR_PNP) 
+    {
+	ROS_ERROR("freak_tracked.cpp: impossible pre_pts.size() = %d", pre_pts.size()); 
+	return 0; 
+    }
+    cv::Mat F_model = cv::findFundamentalMat(pre_pts, cur_pts, cv::FM_8POINT); 
+    ROS_INFO("Finish F Model");
+
+    // compute maximum disparity l 
+    float l = maxDisparity(pre_pts, cur_pts);
+    l *= 1.5; // extend search range by 1.5 
+    float sqr_l = l*l; 
+    int ret = 0;
+    // check out new points within l 
+    for(int i=ids.size(); i--; )
+    {
+	if(ids[i] != -1) break;  // ids: [matched; unmatched]
+	Point2f& p1 = forw_pts[i];
+
+	bool good_match = false;
+	int j = 0;
+	const double* F = F_model.ptr<double>();
+
+	for(; j<k; j++)
+	{
+		Point2f& p2 = mpLastKF->mvKPts[oIdMap[j]].pt;
+		float dis_sqr = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y); 
+		if(dis_sqr > sqr_l) // outside search radius
+			continue; 
+
+		// within search radius, check distance to epipolar line given model F 
+		double a, b, c, d1, d2, s1, s2;
+
+            a = F[0]*p2.x + F[1]*p2.y + F[2];
+            b = F[3]*p2.x + F[4]*p2.y + F[5];
+            c = F[6]*p2.x + F[7]*p2.y + F[8];
+
+            s2 = 1./(a*a + b*b);
+            d2 = p1.x*a + p1.y*b + c;
+
+            a = F[0]*p1.x + F[3]*p1.y + F[6];
+            b = F[1]*p1.x + F[4]*p1.y + F[7];
+            c = F[2]*p1.x + F[5]*p1.y + F[8];
+
+            s1 = 1./(a*a + b*b);
+            d1 = p2.x*a +p2.y*b + c;
+
+            float err = (float)std::max(d1*d1*s1, d2*d2*s2);
+	     if(err <= F_THRESHOLD) // find a good match
+	     {
+			good_match = true; 
+			break;
+	     }
+	}
+	
+	if(good_match)
+	{
+		ids[i] = mpLastKF->mIds[oIdMap[j]];
+		track_cnt[i] = ++CFreakTracker::gvIdTNum[ids[i]];
+		++ret;
+	}
+    }
+    return ret; 
+
+}
+
+/*
+// discards this function, since using spatial search is enough
+int CFreakTracker::checkNewPoints()
+{
+    if(mpLastKF == 0) return 0; 
+    if(n_pts.size() < LEAST_NUM_FOR_PNP) return 0; 
+
+    // 1. find out F model
+    vector<KeyPoint> pre_un_pts; 
+    pre_un_pts.reserve(mpLastKF->mIds.size()); 
+    vector<int> oIdMap(mpLastKF->mIds.size()); 
+    cv::Mat oDesc = mpLastKF->mDiscriptor.clone(); 
+    ROS_INFO("At first oDesc.cols: %d, mDiscriptor.cols%d ", oDesc.cols, mpLastKF->mDiscriptor.cols);
+    int k = 0; 
+
+    vector<Point2f> pre_pts; 
+    vector<Point2f> cur_pts; 
+    pre_pts.reserve(mpLastKF->mIds.size()); 
+    cur_pts.reserve(forw_pts.size()); 
+    // for(int i=0; i<forw_pts.size(); i++)
+    for(int j=0; j<mpLastKF->mIds.size(); j++)
+    {
+	int id = mpLastKF->mIds[j]; 
+	assert(id != -1); 
+	bool tracked = false;
+	// for(int j=0; j<mpLastKF->mIds.size(); j++)
+	for(int i=0; i<forw_pts.size(); i++)
+	{
+	    if(ids[i] == -1) break; 
+	    if(ids[i] == id)
+	    {
+		pre_pts.push_back(mpLastKF->mvKPts[j].pt); 
+		cur_pts.push_back(forw_pts[i]);
+		tracked = true; 
+		break; 
+	    }
+	}
+	// not tracked, prepare for discriptor match 
+	if(!tracked)
+	{
+	    pre_un_pts.push_back(mpLastKF->mvKPts[j]); 
+	    if(j< 0 || j>=mpLastKF->mDiscriptor.rows)
+	    {
+		ROS_ERROR("what? j = %d mDiscriptor.rows: %d, mIds.size() : %d mvKPts.size(): %d", j, mpLastKF->mDiscriptor.rows, 
+		    mpLastKF->mIds.size(), mpLastKF->mvKPts.size());
+	    }
 	    oDesc.row(k) = mpLastKF->mDiscriptor.row(j); 
 	    oIdMap[k++] = j; 
 	}
     }
     ROS_INFO("find out unmatched %d features ", k);
-    cv::resize(oDesc, oDesc, cv::Size(k, oDesc.cols)); 
+    ROS_INFO("Before resize oDesc.cols: %d ", oDesc.cols);
+    cv::resize(oDesc, oDesc, cv::Size(oDesc.cols, k)); 
+    ROS_INFO("After resize oDesc.cols: %d ", oDesc.cols);
     oIdMap.resize(k); 
     if(pre_pts.size() < LEAST_NUM_FOR_PNP) 
     {
@@ -284,7 +654,6 @@ int CFreakTracker::checkNewPoints()
     ROS_INFO("Finish describe %d new features!", cur_un_pts.size()); 
     // 3. match 
     vector<DMatch> matches = matchDesc(oDesc, nDesc); 
-    ROS_INFO("Finish matchDesc");
     if(matches.size() <= 0) return 0;
     // 4. check out whether the matched features satisfy F_model 
     vector<Point2f> tmp_old_pts(matches.size()); 
@@ -309,6 +678,7 @@ int CFreakTracker::checkNewPoints()
     }
     return ret; 
 }
+*/
 
 void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
 {
@@ -391,12 +761,14 @@ CKeyFrame* CFreakTracker::createNewKeyFrame()
 	pkf->mIds[i] = ids[i]; 
     }
     pkf->mUnTracked = N_new_added; 
-
+    ROS_WARN("N = %d, N_new_added = %d", N, N_new_added);
+    // ROS_WARN("new pkf has id: %d kpts: %d discriptors: %d", pkf->mIds.size(), pkf->mvKPts.size(), pkf->mDiscriptor.rows);
     // describe feature with freak 
-    ROS_DEBUG("describe freak begins"); 
-    TicToc t_d; 
-    pkf->describe(); 
-    ROS_DEBUG("describe freak costs: %fms for %d freak features", t_d.toc(), N); 
+    // ROS_DEBUG("describe freak begins"); 
+    // TicToc t_d; 
+    // pkf->describe(); 
+    // ROS_DEBUG("describe freak costs: %fms for %d freak features", t_d.toc(), N); 
+    // ROS_WARN("new pkf has id: %d kpts: %d discriptors: %d", pkf->mIds.size(), pkf->mvKPts.size(), pkf->mDiscriptor.rows);
 
     return pkf; 
 }	
@@ -444,6 +816,7 @@ void CFreakTracker::readImage(const cv::Mat &_img)
         reduceVector(ids, status);
         reduceVector(track_cnt, status);
         ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
+	 ROS_WARN("LOC 1 forw_pts: %d, ids: %d", forw_pts.size(), ids.size());
     }
 
     mbNewKF = false; 
@@ -485,7 +858,8 @@ void CFreakTracker::readImage(const cv::Mat &_img)
         TicToc t_a;
         addPoints();
         ROS_DEBUG("selectFeature costs: %fms", t_a.toc());
-
+	 ROS_WARN("LOC 2 forw_pts: %d, ids: %d", forw_pts.size(), ids.size());
+	 	
 	if(needNewKeyFrame())
 	{
 	    // construct keyframe add discriptor for the extracted key points 

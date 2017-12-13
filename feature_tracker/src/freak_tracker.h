@@ -36,17 +36,25 @@ public:
     std::deque<CKeyFrame*> mqKFs; // queue to store KFs
 
     // match features according to tracked set of features 
-    std::vector<cv::DMatch> findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, std::vector<cv::DMatch>& m_tracked,
-						   std::vector<cv::Point2f>& old_pts, cv::Mat& old_desc, 
-						   std::vector<cv::Point2f>& new_pts, cv::Mat& new_desc); 
+    // std::vector<cv::DMatch> findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, std::vector<cv::DMatch>& m_tracked,
+	//					   std::vector<cv::Point2f>& old_pts, cv::Mat& old_desc, 
+	//					   std::vector<cv::Point2f>& new_pts, cv::Mat& new_desc); 
+   std::vector<cv::DMatch> findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, std::vector<cv::DMatch>& m_tracked,
+						    std::vector<bool>& old_matched);
 
     // match features by PnP-RANSAC 
-    std::vector<cv::DMatch> findMatchByPnP(std::vector<cv::Point2f>& old_pts, cv::Mat& old_desc, 
-					       std::vector<cv::Point2f>& new_pts, cv::Mat& new_desc); 
+    // std::vector<cv::DMatch> findMatchByPnP(std::vector<cv::Point2f>& old_pts, cv::Mat& old_desc, 
+	//				       std::vector<cv::Point2f>& new_pts, cv::Mat& new_desc); 
+	
+    std::vector<cv::DMatch> findMatchByPnP(CKeyFrame * pold, CKeyFrame* pnew, 
+						    std::vector<bool>& old_matched, std::vector<bool>& new_matched);
     
     // match features using freak discriptor 
     std::vector<cv::DMatch> matchDesc(cv::Mat& train_desc, cv::Mat& query_desc);
-    
+
+    // find max disparity between two sets of keypoints 
+    float maxDisparity(std::vector<cv::Point2f>& pts1, std::vector<cv::Point2f>& pts2);
+	
     // match the new added points with those in the last keyframe 
     int checkNewPoints(); 
 
