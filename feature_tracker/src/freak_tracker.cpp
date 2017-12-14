@@ -105,11 +105,24 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     for(int i=0; i<new_matches.size(); i++)
     {
 	DMatch& m = new_matches[i]; 
-	assert(pnew->mIds[m.queryIdx] == -1);
+	// assert(pnew->mIds[m.queryIdx] == -1);
 	assert(pold->mIds[m.trainIdx] != -1); 
-	pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
-	pnew->mUnTracked--;
-	ret++;
+	if(pnew->mIds[m.queryIdx] == -1)
+	{
+		pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
+		pnew->mUnTracked--;
+		ret++;
+	}else{
+		int id1 = pold->mIds[m.trainIdx]; 
+		int id2 = pnew->mIds[m.queryIdx];
+		if(CFreakTracker::gvIdTNum[id1] > CFreakTracker::gvIdTNum[id2] || 
+			(CFreakTracker::gvIdTNum[id1] == CFreakTracker::gvIdTNum[id2] && id1 < id2)) // id1 is more accountable 
+		{
+			pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
+			ids[m.queryIdx] = id1; 
+			ret++;
+		} 
+	}
     }
     return ret;
 }
@@ -373,8 +386,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     nIdMap.resize(k); 
 
     cv::Mat nDesc = pnew->mDiscriptor.clone(); 
-    vector<Point2f> new_pts(k);
-    k =0; 
+    vector<Point2f> new_pts(k); 
     for(int i=0; i<k; i++)
     {
 	nDesc.row(i) = pnew->mDiscriptor.row(nIdMap[i]);
@@ -396,8 +408,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     oIdMap.resize(k);  
     
     cv::Mat oDesc = pnew->mDiscriptor.clone(); 
-    vector<Point2f> old_pts(k);
-    k =0; 
+    vector<Point2f> old_pts(k); 
     for(int i=0; i<k; i++)
     {
 	oDesc.row(i) = pold->mDiscriptor.row(oIdMap[i]);
@@ -408,8 +419,16 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     // match 
     vector<DMatch> matches = matchDesc(oDesc, nDesc); 
     if(matches.size() < LEAST_NUM_FOR_PNP) return ret; 
+    vector<Point2f> tmp_old_pts(matches.size()); 
+    vector<Point2f> tmp_new_pts(matches.size()); 
+    for(int i=0; i<matches.size(); i++)
+    {
+	tmp_old_pts[i] = old_pts[matches[i].trainIdx]; 
+	tmp_new_pts[i] = new_pts[matches[i].queryIdx]; 
+    }
     vector<uchar> status; 
-    cv::Mat F_model = cv::findFundamentalMat(old_pts, new_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
+    // cv::Mat F_model = cv::findFundamentalMat(old_pts, new_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
+    cv::Mat F_model = cv::findFundamentalMat(tmp_old_pts, tmp_new_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
     ret.resize(matches.size()); 
     k = 0;
     for(int i=0; i<status.size(); i++)
@@ -506,16 +525,15 @@ int CFreakTracker::checkNewPoints()
 	    oIdMap[k++] = j; 
 	}
     }
-    ROS_INFO("find out unmatched %d features ", k);
+    // ROS_INFO("find out unmatched %d features ", k);
     oIdMap.resize(k); 
     if(pre_pts.size() < LEAST_NUM_FOR_PNP) 
     {
 	ROS_ERROR("freak_tracked.cpp: impossible pre_pts.size() = %d", pre_pts.size()); 
 	return 0; 
     }
-    cv::Mat F_model = cv::findFundamentalMat(pre_pts, cur_pts, cv::FM_8POINT); 
-    ROS_INFO("Finish F Model");
-
+    cv::Mat F_model = cv::findFundamentalMat(pre_pts, cur_pts, cv::FM_8POINT);
+	
     // compute maximum disparity l 
     float l = maxDisparity(pre_pts, cur_pts);
     l *= 1.5; // extend search range by 1.5 
@@ -570,6 +588,8 @@ int CFreakTracker::checkNewPoints()
 		++ret;
 	}
     }
+    if(ret > 0)
+		ROS_INFO("freak_tracker: in checkNewPoints add %d unmatched features", ret);
     return ret; 
 
 }
@@ -688,7 +708,7 @@ void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
               ROS_DEBUG("matchNewKeyFrame "); 
 	       TicToc t_mkf; 
 		int new_matched = matchNewKeyFrame(*rit, pkf); 
-		ROS_DEBUG("matchNewKeyFrame cost %f ms, find %d new matches", t_mkf.toc(), new_matched);
+		ROS_WARN("matchNewKeyFrame cost %f ms, find %d new matches", t_mkf.toc(), new_matched);
 		rit++; 
     }
     mqKFs.push_back(pkf); 
@@ -761,7 +781,7 @@ CKeyFrame* CFreakTracker::createNewKeyFrame()
 	pkf->mIds[i] = ids[i]; 
     }
     pkf->mUnTracked = N_new_added; 
-    ROS_WARN("N = %d, N_new_added = %d", N, N_new_added);
+    // ROS_WARN("N = %d, N_new_added = %d", N, N_new_added);
     // ROS_WARN("new pkf has id: %d kpts: %d discriptors: %d", pkf->mIds.size(), pkf->mvKPts.size(), pkf->mDiscriptor.rows);
     // describe feature with freak 
     // ROS_DEBUG("describe freak begins"); 
@@ -816,7 +836,6 @@ void CFreakTracker::readImage(const cv::Mat &_img)
         reduceVector(ids, status);
         reduceVector(track_cnt, status);
         ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
-	 ROS_WARN("LOC 1 forw_pts: %d, ids: %d", forw_pts.size(), ids.size());
     }
 
     mbNewKF = false; 
@@ -858,7 +877,6 @@ void CFreakTracker::readImage(const cv::Mat &_img)
         TicToc t_a;
         addPoints();
         ROS_DEBUG("selectFeature costs: %fms", t_a.toc());
-	 ROS_WARN("LOC 2 forw_pts: %d, ids: %d", forw_pts.size(), ids.size());
 	 	
 	if(needNewKeyFrame())
 	{

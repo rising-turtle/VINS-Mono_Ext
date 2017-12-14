@@ -102,7 +102,7 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
 	    ROS_DEBUG("freak_node: get %d image message!", cnt++);
 	    fe.imgCallback(simg); 
 
-	    if(cnt > 200 || !ros::ok())
+	    if(cnt > 1000 || !ros::ok())
 	    {
 		break; 
 	    }else
