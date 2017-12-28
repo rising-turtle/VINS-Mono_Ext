@@ -59,6 +59,7 @@ class Estimator
     void solveOdometry();
     void slideWindowNew();
     void slideWindowOld();
+    void slideWindowOld2();
     void optimization();
     void vector2double();
     void double2vector();

@@ -38,6 +38,9 @@ class FeaturePerId
     const int feature_id;
     int start_frame;
     vector<FeaturePerFrame> feature_per_frame;
+    void erase_old(); 		// delete the first frame, change frame_inc_num and start_frame 
+    vector<int> frame_inc_num;	// where the feature is observed relative to start_frame, 
+				// e.g. [0, 1, 2, 4] means feature is seen at frames: start_frame(sf+0), sf+1, sf+2, sf+4 
 
     int used_num;
     bool is_outlier;
@@ -59,7 +62,7 @@ class FeaturePerId
 class FeatureManager
 {
   public:
-    FeatureManager(Matrix3d _Rs[]);
+    FeatureManager(Matrix3d _Rs[], Vector3d _Ps[] = NULL);
 
     void setRic(Matrix3d _ric[]);
 
@@ -78,6 +81,8 @@ class FeatureManager
     VectorXd getDepthVector();
     void triangulate(Vector3d Ps[], Vector3d tic[], Matrix3d ric[]);
     void removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d new_R, Eigen::Vector3d new_P);
+    void removeBackShiftDepth2(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d Ric, Eigen::Vector3d Pic);
+
     void removeBack();
     void removeFront(int frame_count);
     void removeOutlier();
@@ -86,7 +91,10 @@ class FeatureManager
 
   private:
     double compensatedParallax2(const FeaturePerId &it_per_id, int frame_count);
+    double compensatedParallax3(const FeaturePerId &it_per_id, int li, int ri);
+    double computeParallax(const FeaturePerFrame& frame_i, const FeaturePerFrame& frame_j);
     const Matrix3d *Rs;
+    const Vector3d *Ps; 
     Matrix3d ric[NUM_OF_CAM];
 };
 

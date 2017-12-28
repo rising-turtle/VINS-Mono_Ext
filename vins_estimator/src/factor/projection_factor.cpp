@@ -1,4 +1,7 @@
 #include "projection_factor.h"
+#include <iostream>
+
+using namespace std; 
 
 Eigen::Matrix2d ProjectionFactor::sqrt_info;
 double ProjectionFactor::sum_t;
@@ -39,6 +42,14 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
     Eigen::Vector3d pts_camera_j = qic.inverse() * (pts_imu_j - tic);
     Eigen::Map<Eigen::Vector2d> residual(residuals);
 
+    // cout <<"Pi: "<<Pi<<" Qi: "<<Qi.toRotationMatrix()<<endl;
+    // cout <<"Pj: "<<Pj<<" Qj: "<<Qj.toRotationMatrix()<<endl;
+    // cout <<"tic: "<<tic<<" qic: "<<qic.toRotationMatrix()<<endl;
+    // cout <<"inv_dep_i: "<<inv_dep_i<<endl;
+    // cout <<"pts_w: "<<pts_w<<endl;
+    // cout <<"pts_imu_j: "<<pts_imu_j<<endl;
+    
+
 #ifdef UNIT_SPHERE_ERROR 
     residual =  tangent_base * (pts_camera_j.normalized() - pts_j.normalized());
 #else
@@ -46,7 +57,9 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
     residual = (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
 #endif
 
+    // cout <<"residual: "<<residual<<endl;
     residual = sqrt_info * residual;
+    // cout <<"residual: "<<residual<<endl;
 
     if (jacobians)
     {
@@ -163,7 +176,14 @@ void ProjectionFactor::check(double **parameters)
     double dep_j = pts_camera_j.z();
 
     Eigen::Vector2d residual;
+
+#ifdef UNIT_SPHERE_ERROR 
+    residual =  tangent_base * (pts_camera_j.normalized() - pts_j.normalized());
+#else
+    dep_j = pts_camera_j.z();
     residual = (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
+#endif
+    // residual = (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
 
     residual = sqrt_info * residual;
 
@@ -208,12 +228,17 @@ void ProjectionFactor::check(double **parameters)
         Eigen::Vector3d pts_imu_j = Qj.inverse() * (pts_w - Pj);
         Eigen::Vector3d pts_camera_j = qic.inverse() * (pts_imu_j - tic);
 
-        double dep_j = pts_camera_j.z();
+        // double dep_j = pts_camera_j.z();
 
         Eigen::Vector2d tmp_residual;
-        tmp_residual = (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
+        // tmp_residual = (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
+#ifdef UNIT_SPHERE_ERROR 
+    	tmp_residual =  tangent_base * (pts_camera_j.normalized() - pts_j.normalized());
+#else
+    	dep_j = pts_camera_j.z();
+    	tmp_residual = (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
+#endif
         tmp_residual = sqrt_info * tmp_residual;
-
         num_jacobian.col(k) = (tmp_residual - residual) / eps;
     }
     std::cout << num_jacobian << std::endl;

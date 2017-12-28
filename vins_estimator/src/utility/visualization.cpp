@@ -86,6 +86,8 @@ void printStatistics(const Estimator &estimator, double t)
     sum_of_calculation++;
     ROS_DEBUG("vo solver costs: %f ms", t);
     ROS_DEBUG("average of time %f ms", sum_of_time / sum_of_calculation);
+    // ROS_WARN("vo solver costs: %f ms", t); 
+    // ROS_WARN("average of time %f ms", sum_of_time / sum_of_calculation); 
 
     sum_of_path += (estimator.Ps[WINDOW_SIZE] - last_path).norm();
     last_path = estimator.Ps[WINDOW_SIZE];
@@ -236,6 +238,8 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header, E
     point_cloud.header = header;
     loop_point_cloud.header = header;
 
+    // int cnt = 0; 
+
     for (auto &it_per_id : estimator.f_manager.feature)
     {
         int used_num;
@@ -254,15 +258,22 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header, E
         p.y = w_pts_i(1);
         p.z = w_pts_i(2);
         point_cloud.points.push_back(p);
+	 // cnt++;
     }
     pub_point_cloud.publish(point_cloud);
-
+    // static int cnt_sum = 0; 
+    // static int num_cnt_sum = 0; 
+    // cnt_sum += cnt; 
+    // num_cnt_sum++;
+    // ROS_WARN("point cloud has %d points", cnt);
+    // ROS_WARN("avg point cloud has %d points", (int)(cnt_sum/num_cnt_sum)); 
 
     // pub margined potin
     sensor_msgs::PointCloud margin_cloud, loop_margin_cloud;
     margin_cloud.header = header;
     loop_margin_cloud.header = header;
 
+    // cnt = 0;
     for (auto &it_per_id : estimator.f_manager.feature)
     { 
         int used_num;
@@ -285,9 +296,16 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header, E
             p.y = w_pts_i(1);
             p.z = w_pts_i(2);
             margin_cloud.points.push_back(p);
+	     // ++cnt;
         }
     }
     pub_margin_cloud.publish(margin_cloud);
+    // static int cnt_mar_sum = 0; 
+    // static int num_cnt_mar_sum = 0; 
+    // cnt_mar_sum += cnt; 
+    // num_cnt_mar_sum++;
+    // ROS_WARN("marginal point cloud has %d points", cnt);
+    // ROS_WARN("avg marginal point cloud has %d points", (int)(cnt_mar_sum/num_cnt_mar_sum)); 
 }
 
 void pubPoseGraph(CameraPoseVisualization* posegraph, const std_msgs::Header &header)

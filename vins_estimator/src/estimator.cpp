@@ -1,6 +1,6 @@
 #include "estimator.h"
 
-Estimator::Estimator(): f_manager{Rs}
+Estimator::Estimator(): f_manager{Rs, Ps}
 {
     ROS_INFO("init begins");
     clearState();
@@ -120,6 +120,13 @@ void Estimator::processImage(const map<int, vector<pair<int, Vector3d>>> &image,
     ROS_DEBUG("number of feature: %d", f_manager.getFeatureCount());
     Headers[frame_count] = header;
 
+    // static int n_f = 0; 
+    // static int f_sum = 0; 
+    // int f1 = f_manager.getFeatureCount(); 
+    // f_sum += f1;
+    // ROS_WARN("frame %d has %d features", ++n_f, f1);
+    // ROS_WARN("avg has %d features", f_sum / n_f);
+
     ImageFrame imageframe(image, header.stamp.toSec());
     imageframe.pre_integration = tmp_pre_integration;
     all_image_frame.insert(make_pair(header.stamp.toSec(), imageframe));
@@ -177,7 +184,12 @@ void Estimator::processImage(const map<int, vector<pair<int, Vector3d>>> &image,
         TicToc t_solve;
         solveOdometry();
         ROS_DEBUG("solver costs: %fms", t_solve.toc());
-
+	 // static double t_solve_sum = 0;
+	 // static int num_t_solve_sum = 0; 
+	 // t_solve_sum += t_solve.toc(); 
+	 // num_t_solve_sum++;
+	 // ROS_WARN("solver costs: %f ms", t_solve.toc()); 
+	 // ROS_WARN("avg solver costs: %f ms", t_solve_sum/num_t_solve_sum);
         if (failureDetection())
         {
             ROS_WARN("failure detection!");
@@ -192,6 +204,12 @@ void Estimator::processImage(const map<int, vector<pair<int, Vector3d>>> &image,
         slideWindow();
         f_manager.removeFailures();
         ROS_DEBUG("marginalization costs: %fms", t_margin.toc());
+//	 ROS_WARN("marginalization costs: %f ms", t_margin.toc()); 
+//	 static double t_margin_sum = 0; 
+//	 static int num_t_margin_sum = 0; 
+//	 t_margin_sum += t_margin.toc(); 
+//	 num_t_margin_sum++;
+//	 ROS_WARN("avg marginalization costs: %f ms", t_margin_sum / num_t_margin_sum);
         // prepare output of VINS
         key_poses.clear();
         for (int i = 0; i <= WINDOW_SIZE; i++)
@@ -245,10 +263,13 @@ bool Estimator::initialStructure()
         SFMFeature tmp_feature;
         tmp_feature.state = false;
         tmp_feature.id = it_per_id.feature_id;
-        for (auto &it_per_frame : it_per_id.feature_per_frame)
+        // for (auto &it_per_frame : it_per_id.feature_per_frame)
+	 for (int i=0; i<it_per_id.frame_inc_num.size(); i++)
         {
-            imu_j++;
-            Vector3d pts_j = it_per_frame.point;
+            // imu_j++;
+            imu_j = it_per_id.start_frame + it_per_id.frame_inc_num[i]; 
+            // Vector3d pts_j = it_per_frame.point;
+            Vector3d pts_j = it_per_id.feature_per_frame[i].point;
             tmp_feature.observation.push_back(make_pair(imu_j, Eigen::Vector2d{pts_j.x(), pts_j.y()}));
         }
         sfm_f.push_back(tmp_feature);
@@ -695,14 +716,17 @@ void Estimator::optimization()
         
         Vector3d pts_i = it_per_id.feature_per_frame[0].point;
 
-        for (auto &it_per_frame : it_per_id.feature_per_frame)
+        // for (auto &it_per_frame : it_per_id.feature_per_frame)
+        for(int i=1; i<it_per_id.feature_per_frame.size(); i++)
         {
-            imu_j++;
+            // imu_j++;
+            imu_j = it_per_id.start_frame + it_per_id.frame_inc_num[i];
             if (imu_i == imu_j)
             {
                 continue;
             }
-            Vector3d pts_j = it_per_frame.point;
+            // Vector3d pts_j = it_per_frame.point;
+            Vector3d pts_j = it_per_id.feature_per_frame[i].point;
             ProjectionFactor *f = new ProjectionFactor(pts_i, pts_j);
             problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index]);
             f_m_cnt++;
@@ -762,6 +786,13 @@ void Estimator::optimization()
     ROS_DEBUG("visual measurement count: %d", f_m_cnt);
     ROS_DEBUG("prepare for ceres: %f", t_prepare.toc());
 
+    // static int f_m_cnt_sum = 0; 
+    // static int num_f_m_cnt_sum = 0; 
+    // ROS_WARN("visual measurement count: %d", f_m_cnt);
+    // f_m_cnt_sum += f_m_cnt;
+    // ROS_WARN("avg visual measurement count: %d", f_m_cnt_sum /(++num_f_m_cnt_sum));
+
+
     ceres::Solver::Options options;
 
     options.linear_solver_type = ceres::DENSE_SCHUR;
@@ -781,7 +812,13 @@ void Estimator::optimization()
     //cout << summary.BriefReport() << endl;
     ROS_DEBUG("Iterations : %d", static_cast<int>(summary.iterations.size()));
     ROS_DEBUG("solver costs: %f", t_solver.toc());
-
+    // static double t_solver_sum = 0;
+    // static int num_t_solver_sum = 0; 
+    // t_solver_sum += t_solver.toc(); 
+    // num_t_solver_sum++;
+    // ROS_WARN("solver costs: %f ms", t_solver.toc()); 
+    // ROS_WARN("avg solver costs: %f ms", t_solver_sum / num_t_solver_sum); 
+	
     // relative info between two loop frame
     if(LOOP_CLOSURE && relocalize)
     { 
@@ -863,13 +900,16 @@ void Estimator::optimization()
 
                 Vector3d pts_i = it_per_id.feature_per_frame[0].point;
 
-                for (auto &it_per_frame : it_per_id.feature_per_frame)
+                // for (auto &it_per_frame : it_per_id.feature_per_frame)
+                for(int i=1; i<it_per_id.feature_per_frame.size(); i++)
                 {
-                    imu_j++;
+                    // imu_j++;
+                    imu_j = imu_i + it_per_id.frame_inc_num[i];
                     if (imu_i == imu_j)
                         continue;
 
-                    Vector3d pts_j = it_per_frame.point;
+                    // Vector3d pts_j = it_per_frame.point;
+                    Vector3d pts_j = it_per_id.feature_per_frame[i].point;
                     ProjectionFactor *f = new ProjectionFactor(pts_i, pts_j);
                     ResidualBlockInfo *residual_block_info = new ResidualBlockInfo(f, loss_function,
                                                                                    vector<double *>{para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index]},
@@ -968,6 +1008,12 @@ void Estimator::optimization()
         }
     }
     ROS_DEBUG("whole marginalization costs: %f", t_whole_marginalization.toc());
+    // static double t_whole_marginalization_sum = 0;
+    // static int num_t_whole_marginalization_sum = 0; 
+    // t_whole_marginalization_sum += t_whole_marginalization.toc(); 
+    // num_t_whole_marginalization_sum++;
+    // ROS_WARN("whole marginalization costs: %f ms", t_whole_marginalization.toc()); 
+    // ROS_WARN("avg whole marginalization costs: %f ms", t_whole_marginalization_sum / num_t_whole_marginalization_sum); 
     
     ROS_DEBUG("whole time for ceres: %f", t_whole.toc());
 }
@@ -975,6 +1021,7 @@ void Estimator::optimization()
 void Estimator::slideWindow()
 {
     TicToc t_margin;
+    // int f_before_slide = f_manager.feature.size(); 
     if (marginalization_flag == MARGIN_OLD)
     {
         back_R0 = Rs[0];
@@ -1018,7 +1065,10 @@ void Estimator::slideWindow()
                 all_image_frame.erase(all_image_frame.begin(), it_0);
 
             }
-            slideWindowOld();
+            // slideWindowOld();
+            slideWindowOld2();
+	     // int f_after_slide = f_manager.feature.size(); 
+	     // ROS_WARN("MARGIN_OLD, before slide %d after slide %d , delete %d features", f_before_slide, f_after_slide, f_before_slide - f_after_slide);
         }
     }
     else
@@ -1053,6 +1103,8 @@ void Estimator::slideWindow()
             angular_velocity_buf[WINDOW_SIZE].clear();
 
             slideWindowNew();
+	     // int f_after_slide = f_manager.feature.size(); 
+	     // ROS_WARN("MARGIN_NEW, before slide %d after slide %d , delete %d features", f_before_slide, f_after_slide, f_before_slide - f_after_slide);
         }
     }
 }
@@ -1083,4 +1135,27 @@ void Estimator::slideWindowOld()
         f_manager.removeBack();
 
 }
+
+void Estimator::slideWindowOld2()
+{
+    sum_of_back++;
+
+    bool shift_depth = solver_flag == NON_LINEAR ? true : false;
+    if (shift_depth)
+    {
+        Matrix3d R0, R1;
+        Vector3d P0, P1;
+        R0 = back_R0 * ric[0];
+        //R1 = Rs[0] * ric[0];
+        P0 = back_P0 + back_R0 * tic[0];
+        //P1 = Ps[0] + Rs[0] * tic[0];
+        // f_manager.removeBackShiftDepth(R0, P0, R1, P1);
+        f_manager.removeBackShiftDepth2(R0, P0, ric[0], tic[0]);
+    }
+    else
+        f_manager.removeBack();
+
+}
+
+
 

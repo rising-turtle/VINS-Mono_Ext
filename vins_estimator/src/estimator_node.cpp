@@ -578,6 +578,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "vins_estimator");
     ros::NodeHandle n("~");
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
     readParameters(n);
     estimator.setParameter();
 #ifdef EIGEN_DONT_PARALLELIZE
@@ -588,9 +589,9 @@ int main(int argc, char **argv)
     registerPub(n);
 
     ros::Subscriber sub_imu = n.subscribe(IMU_TOPIC, 2000, imu_callback, ros::TransportHints().tcpNoDelay());
-    ros::Subscriber sub_image = n.subscribe("/feature_tracker/feature", 2000, feature_callback);
+    ros::Subscriber sub_image = n.subscribe("/feature_tracker_ext/feature", 2000, feature_callback);
     ros::Subscriber sub_raw_image = n.subscribe(IMAGE_TOPIC, 2000, raw_image_callback);
-
+    
     std::thread measurement_process{process};
     std::thread loop_detection, pose_graph;
     if (LOOP_CLOSURE)
@@ -604,3 +605,4 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
