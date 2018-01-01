@@ -109,6 +109,7 @@ void CFrontend::pubCurFrame(const sensor_msgs::ImageConstPtr& img_msg)
     feature_points->channels.push_back(v_of_point);
     ROS_DEBUG("publish %f, at %f", feature_points->header.stamp.toSec(), ros::Time::now().toSec());
     mPubImg.publish(feature_points); 
+    ros::spinOnce();
 
     if (SHOW_TRACK)
     {
@@ -138,6 +139,7 @@ void CFrontend::pubCurFrame(const sensor_msgs::ImageConstPtr& img_msg)
 	}
 	// pub_match.publish(ptr->toImageMsg());
 	mPubMatch.publish(ptr->toImageMsg());
+	ros::spinOnce();
     }
     return ; 
 }

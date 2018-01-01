@@ -156,7 +156,6 @@ void imu_callback(const sensor_msgs::ImuConstPtr &imu_msg)
     imu_buf.push(imu_msg);
     m_buf.unlock();
     con.notify_one();
-
     {
         std::lock_guard<std::mutex> lg(m_state);
         predict(imu_msg);

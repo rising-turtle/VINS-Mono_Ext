@@ -232,9 +232,10 @@ void img_callback(const sensor_msgs::ImageConstPtr &img_msg)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "feature_tracker");
+    ros::init(argc, argv, "feature_tracker_ext");
     ros::NodeHandle n("~");
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
     readParameters(n);
 
     for (int i = 0; i < NUM_OF_CAM; i++)

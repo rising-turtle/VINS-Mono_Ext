@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "freak_tracker");
     ros::NodeHandle n("~");
-    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
-    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
+    ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
+    // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
 
     if(argc >= 2)
     {
@@ -70,6 +70,9 @@ int main(int argc, char **argv)
     if(useBag)
     {
 	ROS_WARN("freak_node: succeed to open bagfile %s read from bag!", g_bagf.c_str()); 
+	ROS_INFO("freak_node: wait for start!");
+	cin.ignore();
+	cin.get();
 	readBagData(bag, fe); 
     }
     else{
@@ -90,19 +93,28 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
 {
     std::vector<string> topics; 
     topics.push_back(IMAGE_TOPIC); 
+    topics.push_back(IMU_TOPIC);
     rosbag::View view(bag, rosbag::TopicQuery(topics)); 
     int cnt = 0; 
     fe.mbShowTrack = true; // display the matched result 
+    ros::NodeHandle n;
+    ros::Publisher imu_pub = n.advertise<sensor_msgs::Imu>("/imu0", 1000); 
+    ros::Publisher img_pub = n.advertise<sensor_msgs::Image>("/cam0/color", 1000); 
+    // ROS_WARN("IMU_TOPIC = %s", IMU_TOPIC.c_str());
     BOOST_FOREACH(rosbag::MessageInstance const m, view)
     {
 	if(m.getTopic() == IMAGE_TOPIC)
 	{
-	    // receive an image message 
+	    // publish image 
+	    img_pub.publish(m); 
+	    ros::spinOnce(); 
+
+	    // receive an image message, extract features 
 	    sensor_msgs::ImageConstPtr simg = m.instantiate<sensor_msgs::Image>(); 
 	    ROS_DEBUG("freak_node: get %d image message!", cnt++);
 	    fe.imgCallback(simg); 
 
-	    if(cnt > 1000 || !ros::ok())
+	    if(cnt > 200 || !ros::ok())
 	    {
 		break; 
 	    }else
@@ -112,7 +124,15 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
 		cv::imshow("raw_image", cv_ptrRGB->image); 
 		cv::waitKey(10); 
 	    }
-	}	
+	    usleep(10*1000); // wait 10 ms
+	}
+	if(m.getTopic() == IMU_TOPIC || ("/"+m.getTopic()) == IMU_TOPIC)
+	{
+	    // publish imu 
+	    imu_pub.publish(m); 
+	    ros::spinOnce(); 
+	    usleep(1*1000); // 1 ms 
+	}
     }
     return ; 
 }

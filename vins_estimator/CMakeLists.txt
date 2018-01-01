@@ -63,4 +63,10 @@ add_executable(vins_estimator_ext
 
 target_link_libraries(vins_estimator_ext ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES}) 
 
+add_executable(check_proj_factor src/check_project_factor.cpp
+    src/parameters.cpp
+    src/factor/projection_factor.cpp
+    src/utility/utility.cpp
+    )
+target_link_libraries(check_proj_factor ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
