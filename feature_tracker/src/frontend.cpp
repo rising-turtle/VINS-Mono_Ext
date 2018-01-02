@@ -70,7 +70,7 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     {
 	pubCurFrame(img_msg); 
     }
-    ROS_INFO("whole feature tracker processing costs: %f", t_r.toc());
+    // ROS_INFO("whole feature tracker processing costs: %f", t_r.toc());
 }
 
 void CFrontend::pubCurFrame(const sensor_msgs::ImageConstPtr& img_msg)

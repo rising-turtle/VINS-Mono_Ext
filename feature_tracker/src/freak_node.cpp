@@ -27,7 +27,9 @@ CFreakTracker trackerData[NUM_OF_CAM];
 
 
 // get data from bag file 
-string g_bagf = "/home/davidz/work/data/ETAS_2F_640_30/rgb.bag"; 
+// string g_bagf = "/home/davidz/work/data/ETAS_2F_640_30/rgb.bag"; 
+// string g_bagf = "/home/davidz/work/data/ETAS_F2_640_30/rgb.bag"; 
+string g_bagf = ""; 
 bool readBag(string bagfile, rosbag::Bag& bag); 
 void readBagData(rosbag::Bag& bag, CFrontend& fe); 
 
@@ -44,12 +46,15 @@ int main(int argc, char **argv)
     ros::NodeHandle n("~");
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
     // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);
+    ros::Subscriber sub_img ;
 
     if(argc >= 2)
     {
 	g_bagf = string(argv[1]); 
     }
     
+    n.param("bag_file", g_bagf, string(""));
+
     rosbag::Bag bag; 
     bool useBag = readBag(g_bagf, bag); 
     if(useBag)
@@ -77,7 +82,7 @@ int main(int argc, char **argv)
     }
     else{
 	ROS_WARN("freak_node: subscribe from topic : %s", IMAGE_TOPIC.c_str()); 
-	ros::Subscriber sub_img = n.subscribe(IMAGE_TOPIC, 100, &CFrontend::imgCallback, &fe); 
+	sub_img = n.subscribe(IMAGE_TOPIC, 100, &CFrontend::imgCallback, &fe); 
     }
     // pub_img = n.advertise<sensor_msgs::PointCloud>("feature", 1000);
     // pub_match = n.advertise<sensor_msgs::Image>("feature_img",1000);
@@ -88,6 +93,68 @@ int main(int argc, char **argv)
     ros::spin();
     return 0;
 }
+/*
+void readBagData(rosbag::Bag& bag, CFrontend& fe)
+{
+    std::vector<string> topics; 
+    topics.push_back(IMAGE_TOPIC); 
+    topics.push_back(IMU_TOPIC);
+    rosbag::View view(bag, rosbag::TopicQuery(topics)); 
+    int cnt = 0; 
+    // fe.mbShowTrack = true; // display the matched result 
+    ros::NodeHandle n;
+    ros::Publisher imu_pub = n.advertise<sensor_msgs::Imu>("/imu0", 1000); 
+    ros::Publisher img_pub = n.advertise<sensor_msgs::Image>("/cam0/color", 1000); 
+    // ROS_WARN("IMU_TOPIC = %s", IMU_TOPIC.c_str());
+    bool first = true; 
+    rosbag::MessageInstance m_pre; 
+    BOOST_FOREACH(rosbag::MessageInstance m, view)
+    {
+	if(!ros::ok()) break; 
+	if(first)
+	{
+	    first = false; 
+	    // ignore first msg 
+	}else
+	{
+	    if(m_pre.getTopic() == IMU_TOPIC  && m.getTopic() == IMAGE_TOPIC)
+	    // if(m_pre.getTopic() == IMU_TOPIC)
+	    {
+		// Do nothing, since m_pre has been published 
+		// imu_pub.publish(m_pre);
+		// ros::spinOnce(); 
+	    }else if(m_pre.getTopic() == IMU_TOPIC && m.getTopic() == IMU_TOPIC) 	    
+	    {
+		// publish imu  
+		imu_pub.publish(m);
+		ros::spinOnce();
+	    }
+	    else if(m_pre.getTopic() == IMAGE_TOPIC && m.getTopic() == IMAGE_TOPIC)
+	    {
+		// impossible
+		ROS_ERROR("freak_node: impossible!"); 
+		goto HANDLE_IMAGE;
+	    }else if(m_pre.getTopic() == IMAGE_TOPIC && m.getTopic() == IMU_TOPIC)
+	    {
+		// publish IMU first, then handle image 
+		imu_pub.publish(m); 
+		ros::spinOnce(); 
+
+		// publish image 
+HANDLE_IMAGE:   img_pub.publish(m_pre); 
+		ros::spinOnce(); 
+
+		// receive an image message, extract features 
+		sensor_msgs::ImageConstPtr simg = m_pre.instantiate<sensor_msgs::Image>(); 
+		fe.imgCallback(simg); 
+		usleep(5*1000); // wait 10 ms
+	    }
+	}
+	m_pre = m; 
+    }
+    return ; 
+}*/
+
 
 void readBagData(rosbag::Bag& bag, CFrontend& fe)
 {
@@ -96,7 +163,7 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
     topics.push_back(IMU_TOPIC);
     rosbag::View view(bag, rosbag::TopicQuery(topics)); 
     int cnt = 0; 
-    fe.mbShowTrack = true; // display the matched result 
+    // fe.mbShowTrack = true; // display the matched result 
     ros::NodeHandle n;
     ros::Publisher imu_pub = n.advertise<sensor_msgs::Imu>("/imu0", 1000); 
     ros::Publisher img_pub = n.advertise<sensor_msgs::Image>("/cam0/color", 1000); 
@@ -116,15 +183,16 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
 
 	    if(cnt > 200 || !ros::ok())
 	    {
+		ROS_WARN("freak_node: cnt = %d break? ", cnt);
 		break; 
 	    }else
 	    {
-		cv_bridge::CvImageConstPtr cv_ptrRGB = cv_bridge::toCvShare(simg, sensor_msgs::image_encodings::BGR8); 
-		cv::namedWindow("raw_image", CV_WINDOW_KEEPRATIO);
-		cv::imshow("raw_image", cv_ptrRGB->image); 
-		cv::waitKey(10); 
+		// cv_bridge::CvImageConstPtr cv_ptrRGB = cv_bridge::toCvShare(simg, sensor_msgs::image_encodings::BGR8); 
+		// cv::namedWindow("raw_image", CV_WINDOW_KEEPRATIO);
+		// cv::imshow("raw_image", cv_ptrRGB->image); 
+		// cv::waitKey(10); 
 	    }
-	    usleep(10*1000); // wait 10 ms
+	    usleep(5*1000); // wait 10 ms
 	}
 	if(m.getTopic() == IMU_TOPIC || ("/"+m.getTopic()) == IMU_TOPIC)
 	{
