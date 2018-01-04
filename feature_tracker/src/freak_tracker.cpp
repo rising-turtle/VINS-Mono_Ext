@@ -105,8 +105,11 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     for(int i=0; i<new_matches.size(); i++)
     {
 	DMatch& m = new_matches[i]; 
+	// assert(m.trainIdx < pold->mIds.size()); 
+	// assert(m.queryIdx < pnew->mIds.size());
 	// assert(pnew->mIds[m.queryIdx] == -1);
-	assert(pold->mIds[m.trainIdx] != -1); 
+	// assert(pold->mIds[m.trainIdx] != -1); 
+	
 	if(pnew->mIds[m.queryIdx] == -1)
 	{
 		pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
@@ -118,12 +121,14 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
 		if(CFreakTracker::gvIdTNum[id1] > CFreakTracker::gvIdTNum[id2] || 
 			(CFreakTracker::gvIdTNum[id1] == CFreakTracker::gvIdTNum[id2] && id1 < id2)) // id1 is more accountable 
 		{
+			// assert(m.queryIdx < ids.size());
 			pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
 			ids[m.queryIdx] = id1; 
 			ret++;
 		} 
 	}
     }
+    
     return ret;
 }
 
@@ -363,7 +368,7 @@ std::vector<cv::DMatch> CFreakTracker::matchDesc(Mat& train_desc, Mat& query_des
 #else
     cv::BruteForceMatcher<cv::Hamming> matcher;
 #endif
-    matcher.match(train_desc, query_desc, matches); 
+    matcher.match(query_desc, train_desc, matches); // bug: match (query, train, matches)
     return matches; 
 }
 
@@ -375,6 +380,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     int N = pnew->mDes2Id.size(); 
     vector<int> nIdMap(N); 
     int k =0; 
+    // ROS_WARN("start extract new features");
     // find out points not been matched in new KF 
     for(int i=0; i<N; i++)
     {
@@ -389,13 +395,18 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     vector<Point2f> new_pts(k); 
     for(int i=0; i<k; i++)
     {
+    	// assert(nIdMap[i] < pnew->mDiscriptor.rows);
+	// assert(nIdMap[i]  >= 0);
+	// assert(i < nDesc.rows);
 	nDesc.row(i) = pnew->mDiscriptor.row(nIdMap[i]);
 	new_pts[i] = pnew->mvKPts[pnew->mDes2Id[nIdMap[i]]].pt;
     }
     cv::resize(nDesc, nDesc, cv::Size(nDesc.cols, k)); // cv::Size(Width, Height)
+    // ROS_WARN("finish extract new features k = %d", k);
 
     // find out points not been matched in old KF 
     pold->describe();
+    // ROS_WARN("start extract old features");
     N = pold->mDes2Id.size(); 
     vector<int> oIdMap(N);
     k = 0 ; 
@@ -407,35 +418,53 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     if(k < LEAST_NUM_FOR_PNP) return ret; 
     oIdMap.resize(k);  
     
-    cv::Mat oDesc = pnew->mDiscriptor.clone(); 
+    cv::Mat oDesc = pold->mDiscriptor.clone(); 
     vector<Point2f> old_pts(k); 
     for(int i=0; i<k; i++)
     {
+       // assert(oIdMap[i] < pold->mDiscriptor.rows);
+	// assert(oIdMap[i]  >= 0);
+	// assert(i < oDesc.rows);
 	oDesc.row(i) = pold->mDiscriptor.row(oIdMap[i]);
 	old_pts[i] = pold->mvKPts[pold->mDes2Id[oIdMap[i]]].pt;
     }
+    // ROS_WARN("finish extract old features k = %d", k);
     cv::resize(oDesc, oDesc, cv::Size(oDesc.cols, k)); // cv::Size(Width, Height)
-
+    
+    // ROS_WARN("start to match!");
     // match 
     vector<DMatch> matches = matchDesc(oDesc, nDesc); 
     if(matches.size() < LEAST_NUM_FOR_PNP) return ret; 
+    // ROS_WARN("after match, has %d matched features, oDesc has %d nDesc has %d", matches.size(), oDesc.rows, nDesc.rows);
     vector<Point2f> tmp_old_pts(matches.size()); 
     vector<Point2f> tmp_new_pts(matches.size()); 
+    vector<int> tmp_map_old(matches.size()); 
+    vector<int> tmp_map_new(matches.size());
     for(int i=0; i<matches.size(); i++)
     {
 	tmp_old_pts[i] = old_pts[matches[i].trainIdx]; 
 	tmp_new_pts[i] = new_pts[matches[i].queryIdx]; 
     }
+    // ROS_WARN("finish match, start F_model!");
     vector<uchar> status; 
     // cv::Mat F_model = cv::findFundamentalMat(old_pts, new_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
     cv::Mat F_model = cv::findFundamentalMat(tmp_old_pts, tmp_new_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
     ret.resize(matches.size()); 
+    // ROS_WARN("After F_model");
     k = 0;
+    assert(status.size() == matches.size());
     for(int i=0; i<status.size(); i++)
     {
 	if(status[i])
 	{
 	    DMatch m ; 
+	    // ROS_INFO(" matches[i].queryIdx  = %d, nIdMap.size() = %d, matches[i].trainIdx = %d, oIdMap.size() = %d, nIdMap[matches[i].queryIdx] = %d, pnew->mDes2Id.size() = %d, oIdMap[matches[i].trainIdx] = %d, pold->mDes2Id.size() = %d", 
+		//	matches[i].queryIdx, nIdMap.size(), matches[i].trainIdx, oIdMap.size(), 
+		//	nIdMap[matches[i].queryIdx], pnew->mDes2Id.size(), oIdMap[matches[i].trainIdx],  pold->mDes2Id.size());
+	    // assert(matches[i].queryIdx < nIdMap.size()); 
+	    // assert(matches[i].trainIdx  < oIdMap.size()); 
+	    // assert(nIdMap[matches[i].queryIdx] < pnew->mDes2Id.size());
+	    // assert(oIdMap[matches[i].trainIdx] < pold->mDes2Id.size());
 	    m.queryIdx = pnew->mDes2Id[nIdMap[matches[i].queryIdx]];
 	    m.trainIdx = pold->mDes2Id[oIdMap[matches[i].trainIdx]];
 	
@@ -443,6 +472,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
 	}
     }
     ret.resize(k); 
+    // ROS_WARN("Assign return ");
     return ret; 
 }
 
@@ -703,6 +733,7 @@ int CFreakTracker::checkNewPoints()
 void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
 {
     deque<CKeyFrame*>::reverse_iterator rit = mqKFs.rbegin(); 
+    // bool matched_newKF = false; 
     while(rit!= mqKFs.rend())
     {
               ROS_DEBUG("matchNewKeyFrame "); 
@@ -710,6 +741,7 @@ void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
 		int new_matched = matchNewKeyFrame(*rit, pkf); 
 		ROS_WARN("matchNewKeyFrame cost %f ms, find %d new matches", t_mkf.toc(), new_matched);
 		rit++; 
+		// matched_newKF = true; 
     }
     mqKFs.push_back(pkf); 
     if(mqKFs.size() >= MAX_NUM_KFS) 
@@ -717,6 +749,10 @@ void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
 	removeOldKeyFrame();
     }
     mpLastKF = pkf; 
+    // if(matched_newKF)
+    {
+		// ROS_WARN("succeed to finish addKeyFrame, return !");
+    }
     return ;
 }
 

@@ -62,10 +62,10 @@ keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
 
 #imu parameters       The more accurate parameters you provide, the better performance
 # TODO: figure out these parameters
-acc_n: 0.014 # 0.2          # accelerometer measurement noise standard deviation. #0.2
-gyr_n: 0.002 # 0.02         # gyroscope measurement noise standard deviation.     #0.05
-acc_w: 0.0004 # 0.0002         # accelerometer bias random work noise standard deviation.  #0.02
-gyr_w: 5.0e-5 # 2.0e-5       # gyroscope bias random work noise standard deviation.     #4.0e-5
+acc_n: 0.014           # accelerometer measurement noise standard deviation. #0.001372
+gyr_n: 0.0006          # gyroscope measurement noise standard deviation.     #0.000061087
+acc_w: 0.000277          # accelerometer bias random work noise standard deviation.  #0.000027719
+gyr_w: 0.00003428        # gyroscope bias random work noise standard deviation.     #0.000003428
 g_norm: 9.81007     # gravity magnitude
 
 
