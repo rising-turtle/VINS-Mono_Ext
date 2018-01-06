@@ -24,6 +24,9 @@ public:
 
     // image callback 
     void imgCallback( const sensor_msgs::ImageConstPtr &img_msg); 
+
+    // for debug 
+    void imgCallback2( const sensor_msgs::ImageConstPtr &img_msg); 
     
     // publish this frame 
     void pubCurFrame(const sensor_msgs::ImageConstPtr &img_msg); 
