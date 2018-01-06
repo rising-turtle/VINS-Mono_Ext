@@ -54,21 +54,14 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     TicToc t_r;
 
     // detect & track features 
-    // mpFTracker->readImage(ptr->image.clone());
-   //  mpFTracker->readImage(ptr->image.rowRange(ROW*0, ROW*1));
-    for (int i = 0; i < NUM_OF_CAM; i++)
-    {
-        ROS_DEBUG("processing camera %d", i);
-        if (i != 1 || !STEREO_TRACK)
-            mpFTracker->readImage(ptr->image.rowRange(ROW * i, ROW * (i + 1)));
-    }
+    mpFTracker->readImage(ptr->image);
     
     // assign id to new feautres whose id equal -1
     for (unsigned int i = 0;; i++)
     {
 	bool completed = false;
-	completed |= mpFTracker->updateID(i);
-	// completed |= ((CFreakTracker*)mpFTracker)->updateIDWithKF(i);
+	// completed |= mpFTracker->updateID(i);
+	completed |= ((CFreakTracker*)mpFTracker)->updateIDWithKF(i);
 	if (!completed)
 	    break;
     }

@@ -96,7 +96,7 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     }else{
        ROS_DEBUG("findMatchByPnP"); 
 	TicToc t_fmpp;
-	new_matches = findMatchByPnP(pold, pnew, old_matched, new_matched); 
+	// new_matches = findMatchByPnP(pold, pnew, old_matched, new_matched); 
 	ROS_DEBUG("findMatchByPnP cost %f ms, find %d new_matches", t_fmpp.toc(), new_matches.size());
     }
     
@@ -239,7 +239,9 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
 	ot_pts[i] = pold->mvKPts[m.trainIdx].pt; 
 	nt_pts[i] = pnew->mvKPts[m.queryIdx].pt; 
     }
-    Mat F_model = cv::findFundamentalMat(ot_pts, nt_pts, cv::FM_8POINT); 
+    // Mat F_model = cv::findFundamentalMat(ot_pts, nt_pts, cv::FM_8POINT); 
+    vector<uchar> status;
+   cv::Mat F_model = cv::findFundamentalMat(ot_pts, nt_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
 
     // compute search radius 
     float l = maxDisparity(ot_pts, nt_pts); 
@@ -309,7 +311,8 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
             d1 = p2.x*a +p2.y*b + c;
 
             float err = (float)std::max(d1*d1*s1, d2*d2*s2);
-	     if(err <= F_THRESHOLD) // find a good match
+	     // if(err <= F_THRESHOLD/2.) // find a good match
+	     if(err <= 1.0)
 	     {
 	     		DMatch m;
 			m.queryIdx = nIdMap[i]; 
@@ -562,7 +565,9 @@ int CFreakTracker::checkNewPoints()
 	ROS_ERROR("freak_tracked.cpp: impossible pre_pts.size() = %d", pre_pts.size()); 
 	return 0; 
     }
-    cv::Mat F_model = cv::findFundamentalMat(pre_pts, cur_pts, cv::FM_8POINT);
+    // cv::Mat F_model = cv::findFundamentalMat(pre_pts, cur_pts, cv::FM_8POINT);
+        vector<uchar> status;
+    cv::Mat F_model = cv::findFundamentalMat(pre_pts, cur_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
 	
     // compute maximum disparity l 
     float l = maxDisparity(pre_pts, cur_pts);
@@ -604,7 +609,8 @@ int CFreakTracker::checkNewPoints()
             d1 = p2.x*a +p2.y*b + c;
 
             float err = (float)std::max(d1*d1*s1, d2*d2*s2);
-	     if(err <= F_THRESHOLD) // find a good match
+	     // if(err <= F_THRESHOLD/4.) // find a good match
+	     if(err <= 0.5)
 	     {
 			good_match = true; 
 			break;
@@ -930,7 +936,7 @@ void CFreakTracker::readImage(const cv::Mat &_img)
 	}else{
 	    ROS_DEBUG("checkNewPoints");
 	    TicToc t_cnp;
-	    int added = checkNewPoints(); 
+	    int added = 0; // checkNewPoints(); 
 	    ROS_DEBUG("checkNewPoints cost %f ms add %d new matches", t_cnp.toc(), added); 
 	}
 	

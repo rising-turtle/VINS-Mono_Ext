@@ -31,8 +31,8 @@ double first_image_time;
 int pub_count = 1;
 bool first_image_flag = true;
 
-FeatureTracker trackerData[NUM_OF_CAM];
-// CFreakTracker trackerData[NUM_OF_CAM]; 
+// FeatureTracker trackerData[NUM_OF_CAM];
+CFreakTracker trackerData[NUM_OF_CAM]; 
 
 
 // get data from bag file 
