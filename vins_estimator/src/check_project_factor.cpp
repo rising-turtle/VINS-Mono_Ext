@@ -29,7 +29,7 @@ void test()
 {
     Eigen::Vector3d pts_i(3, 2, 1.); 
     Eigen::Vector3d pts_j(20, 20, 1.); 
-    double ** para = new double*[5]; 
+    double ** para = new double*[4]; 
     double qx = 0.1; 
     double qy = -0.2; 
     double qz = 0.5; 
@@ -57,8 +57,9 @@ void test()
     double inv_dep = 0.5; 
     para[3][0] = 0.5;
 
-    para[4] = new double[1]; // count
-    para[4][0] = 7.0;
+    // para[4] = new double[1]; // count
+    // para[4][0] = 7.0;
+    double count = 7.0; 
 
     Eigen::Vector3d pts_camera_i = pts_i/inv_dep; 
     Eigen::Vector3d pts_imu_i = pts_camera_i; 
@@ -71,7 +72,7 @@ void test()
     pts_j += noise; 
     // ProjectionFactor * f = new ProjectionFactor(pts_i, pts_j); 
     // ProjectionFactor::sqrt_info.setIdentity();
-    WeightProjectionFactor * f = new WeightProjectionFactor(pts_i, pts_j); 
+    WeightProjectionFactor * f = new WeightProjectionFactor(pts_i, pts_j, count); 
     WeightProjectionFactor::sqrt_info.setIdentity(); 
     f->check(para); 
     return ; 

@@ -7,7 +7,8 @@ Eigen::Matrix2d WeightProjectionFactor::sqrt_info;
 double WeightProjectionFactor::sum_t;
 
 
-WeightProjectionFactor::WeightProjectionFactor(const Eigen::Vector3d &_pts_i, const Eigen::Vector3d &_pts_j) : pts_i(_pts_i), pts_j(_pts_j)
+WeightProjectionFactor::WeightProjectionFactor(const Eigen::Vector3d &_pts_i, const Eigen::Vector3d &_pts_j, double count) : 
+	pts_i(_pts_i), pts_j(_pts_j), mcount(count)
 {
 #ifdef UNIT_SPHERE_ERROR
     Eigen::Vector3d b1, b2;
@@ -35,9 +36,9 @@ bool WeightProjectionFactor::Evaluate(double const *const *parameters, double *r
     Eigen::Quaterniond qic(parameters[2][6], parameters[2][3], parameters[2][4], parameters[2][5]);
 
     double inv_dep_i = parameters[3][0];
-    double n_count = parameters[4][0]; 
+    // double n_count = parameters[4][0]; 
     
-    double w_ = (1. + exp(n_count-WINDOW_SIZE)); 
+    double w_ = (1. + exp(mcount-WINDOW_SIZE)); 
 
     Eigen::Vector3d pts_camera_i = pts_i / inv_dep_i;
     Eigen::Vector3d pts_imu_i = qic * pts_camera_i + tic;
@@ -55,14 +56,14 @@ bool WeightProjectionFactor::Evaluate(double const *const *parameters, double *r
     
 
 #ifdef UNIT_SPHERE_ERROR 
-    residual =  w_ * tangent_base * (pts_camera_j.normalized() - pts_j.normalized());
+    residual =   tangent_base * (pts_camera_j.normalized() - pts_j.normalized());
 #else
     double dep_j = pts_camera_j.z();
-    residual = w_ * (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
+    residual =  (pts_camera_j / dep_j).head<2>() - pts_j.head<2>();
 #endif
 
     // cout <<"residual: "<<residual<<endl;
-    residual = sqrt_info * residual;
+    residual = w_ * sqrt_info * residual;
     // cout <<"residual: "<<residual<<endl;
 
     if (jacobians)
@@ -170,9 +171,9 @@ void WeightProjectionFactor::check(double **parameters)
     Eigen::Vector3d tic(parameters[2][0], parameters[2][1], parameters[2][2]);
     Eigen::Quaterniond qic(parameters[2][6], parameters[2][3], parameters[2][4], parameters[2][5]);
     double inv_dep_i = parameters[3][0];
-    double n_count = parameters[4][0];  
+    // double n_count = parameters[4][0];  
     
-    double w_ = 1. + exp(n_count - WINDOW_SIZE); 
+    double w_ = 1. + exp(mcount - WINDOW_SIZE); 
 
     Eigen::Vector3d pts_camera_i = pts_i / inv_dep_i;
     Eigen::Vector3d pts_imu_i = qic * pts_camera_i + tic;
