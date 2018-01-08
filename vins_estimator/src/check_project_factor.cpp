@@ -4,6 +4,7 @@
 */
 
 #include "factor/projection_factor.h"
+#include "factor/weight_projection_factor.h"
 #include <iostream>
 #include <Eigen/Dense>
 #include <ros/ros.h>
@@ -28,7 +29,7 @@ void test()
 {
     Eigen::Vector3d pts_i(3, 2, 1.); 
     Eigen::Vector3d pts_j(20, 20, 1.); 
-    double ** para = new double*[4]; 
+    double ** para = new double*[5]; 
     double qx = 0.1; 
     double qy = -0.2; 
     double qz = 0.5; 
@@ -55,6 +56,10 @@ void test()
     para[3] = new double[1]; // depth 
     double inv_dep = 0.5; 
     para[3][0] = 0.5;
+
+    para[4] = new double[1]; // count
+    para[4][0] = 7.0;
+
     Eigen::Vector3d pts_camera_i = pts_i/inv_dep; 
     Eigen::Vector3d pts_imu_i = pts_camera_i; 
     Eigen::Vector3d pts_w = Qi*pts_imu_i + Pi; 
@@ -64,8 +69,10 @@ void test()
     Eigen::Vector3d noise(0.01, 0.02, -0.01); 
     pts_j = (pts_cam_j/dep_j); 
     pts_j += noise; 
-    ProjectionFactor * f = new ProjectionFactor(pts_i, pts_j); 
-    ProjectionFactor::sqrt_info.setIdentity();
+    // ProjectionFactor * f = new ProjectionFactor(pts_i, pts_j); 
+    // ProjectionFactor::sqrt_info.setIdentity();
+    WeightProjectionFactor * f = new WeightProjectionFactor(pts_i, pts_j); 
+    WeightProjectionFactor::sqrt_info.setIdentity(); 
     f->check(para); 
     return ; 
 

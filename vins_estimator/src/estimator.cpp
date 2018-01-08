@@ -532,8 +532,12 @@ void Estimator::vector2double()
     }
 
     VectorXd dep = f_manager.getDepthVector();
+    VectorXd cnt = f_manager.getCountVector();
     for (int i = 0; i < f_manager.getFeatureCount(); i++)
-        para_Feature[i][0] = dep(i);
+    {
+    	para_Feature[i][0] = dep(i);
+	para_Feature_count[i][0] = cnt(i);
+    }
 }
 
 void Estimator::double2vector()
@@ -727,8 +731,10 @@ void Estimator::optimization()
             }
             // Vector3d pts_j = it_per_frame.point;
             Vector3d pts_j = it_per_id.feature_per_frame[i].point;
-            ProjectionFactor *f = new ProjectionFactor(pts_i, pts_j);
-            problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index]);
+            // ProjectionFactor *f = new ProjectionFactor(pts_i, pts_j);
+            // problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index]);
+            WeightProjectionFactor * f = new WeightProjectionFactor(pts_i, pts_j); 
+	     problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index], para_Feature_count[feature_index]);
             f_m_cnt++;
         }
     }

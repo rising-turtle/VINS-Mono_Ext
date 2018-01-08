@@ -349,6 +349,20 @@ VectorXd FeatureManager::getDepthVector()
     return dep_vec;
 }
 
+VectorXd FeatureManager::getCountVector()
+{
+	VectorXd count(getFeatureCount()); 
+	int feature_index = -1;
+	for(auto &it_per_id : feature)
+	{
+		it_per_id.used_num = it_per_id.feature_per_frame.size(); 
+		if (!(it_per_id.used_num >= 2 && it_per_id.start_frame < WINDOW_SIZE - 2))
+            		continue;
+		count(++feature_index) = (double)(it_per_id.used_num);
+	}
+	return count;
+}
+
 void FeatureManager::triangulate(Vector3d Ps[], Vector3d tic[], Matrix3d ric[])
 {
     for (auto &it_per_id : feature)

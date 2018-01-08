@@ -79,6 +79,7 @@ class FeatureManager
     void removeFailures();
     void clearDepth(const VectorXd &x);
     VectorXd getDepthVector();
+    VectorXd getCountVector();
     void triangulate(Vector3d Ps[], Vector3d tic[], Matrix3d ric[]);
     void removeBackShiftDepth(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d new_R, Eigen::Vector3d new_P);
     void removeBackShiftDepth2(Eigen::Matrix3d marg_R, Eigen::Vector3d marg_P, Eigen::Matrix3d Ric, Eigen::Vector3d Pic);
