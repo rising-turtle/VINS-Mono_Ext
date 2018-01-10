@@ -59,6 +59,7 @@ public:
     int checkNewPoints(); 
 
     // record the track number of each feature
+    int mFrameCnt;
     static std::vector<int> gvIdTNum;
     bool mbNewKF; // Whether a new KF is created 
     bool updateIDWithKF(int i); 

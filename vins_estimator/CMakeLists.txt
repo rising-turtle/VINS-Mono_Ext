@@ -4,7 +4,7 @@ project(vins_estimator_ext)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11")
 #-DEIGEN_USE_MKL_ALL")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w -g")
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -38,6 +38,7 @@ add_executable(vins_estimator_ext
     src/feature_manager.cpp
     src/factor/pose_local_parameterization.cpp
     src/factor/projection_factor.cpp
+    src/factor/weight_projection_factor.cpp
     src/factor/marginalization_factor.cpp
     src/utility/utility.cpp
     src/utility/visualization.cpp
@@ -66,6 +67,7 @@ target_link_libraries(vins_estimator_ext ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CE
 add_executable(check_proj_factor src/check_project_factor.cpp
     src/parameters.cpp
     src/factor/projection_factor.cpp
+    src/factor/weight_projection_factor.cpp
     src/utility/utility.cpp
     )
 target_link_libraries(check_proj_factor ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})

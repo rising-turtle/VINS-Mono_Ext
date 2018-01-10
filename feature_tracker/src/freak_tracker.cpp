@@ -19,7 +19,8 @@ using cv::DMatch;
 vector<int> CFreakTracker::gvIdTNum;
 
 CFreakTracker::CFreakTracker(): 
-mpLastKF(0)
+mpLastKF(0),
+mFrameCnt(0)
 {}
 CFreakTracker::~CFreakTracker()
 {
@@ -311,8 +312,8 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
             d1 = p2.x*a +p2.y*b + c;
 
             float err = (float)std::max(d1*d1*s1, d2*d2*s2);
-	     // if(err <= F_THRESHOLD/2.) // find a good match
-	     if(err <= 1.0)
+	     if(err <= F_THRESHOLD/2.) // find a good match
+	     // if(err <= 1.0)
 	     {
 	     		DMatch m;
 			m.queryIdx = nIdMap[i]; 
@@ -740,14 +741,17 @@ void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
 {
     deque<CKeyFrame*>::reverse_iterator rit = mqKFs.rbegin(); 
     // bool matched_newKF = false; 
-    while(rit!= mqKFs.rend())
+    if(mFrameCnt > 200) // 200 is set to not affect initialization process in estimator
     {
+    	while(rit!= mqKFs.rend())
+    	{
               ROS_DEBUG("matchNewKeyFrame "); 
 	       TicToc t_mkf; 
 		int new_matched = matchNewKeyFrame(*rit, pkf); 
 		ROS_WARN("matchNewKeyFrame cost %f ms, find %d new matches", t_mkf.toc(), new_matched);
 		rit++; 
 		// matched_newKF = true; 
+    	}
     }
     mqKFs.push_back(pkf); 
     if(mqKFs.size() >= MAX_NUM_KFS) 
@@ -840,6 +844,7 @@ void CFreakTracker::readImage(const cv::Mat &_img)
     ROS_WARN_ONCE("freak_tracker: in readImage!");
     cv::Mat img;
     TicToc t_r;
+    ++mFrameCnt;
 
     if (EQUALIZE)
     {

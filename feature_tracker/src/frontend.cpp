@@ -54,7 +54,7 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     TicToc t_r;
 
     // detect & track features 
-    mpFTracker->readImage(ptr->image);
+    mpFTracker->readImage(ptr->image.clone());
     
     // assign id to new feautres whose id equal -1
     for (unsigned int i = 0;; i++)
