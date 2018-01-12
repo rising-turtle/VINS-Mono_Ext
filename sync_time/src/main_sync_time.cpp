@@ -1,28 +1,24 @@
 /*
-    Jan. 9 2018, He Zhang, hxzhang1@ualr.edu 
+    Jan. 11 2018, He Zhang, hxzhang1@ualr.edu 
     input: 
-	1. folder dir, containing: timestamp.txt, /color 
-	2. imu_vn100.log
+	1. sfm_result.log, containing: rotation result from vision_sfm
+	2. imu_vn100.log, containing: imu readings 
     output:
-	imu's time_shift [ms]
+	imu's time_shift [ms] to best align rotation with SFM's rotation result 
 */
 
 #include <ros/ros.h>
 #include <fstream>
 #include <string>
-#include <opencv2/opencv.hpp>
-#include "track_feature.h"
-
+// #include <opencv2/opencv.hpp>
 using namespace std; 
 
-extern bool readImg(string fname, map<string, string>& res, int from, int to);
+extern bool read_imu_vn100(string fname, vector<string>& timestamp, vector<vector<double> > & imu); 
+extern bool read_sfm_result(string fname, vector<string>& timestamp, vector<vector<double> >& qv);
 
-string g_dir(""); 
-string g_imu_file(""); 
-int g_from = 50; 
-int g_cnt = 50; 
-
-string g_cam_file("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/config/robocane_config.yaml"); 
+string g_sfm_result(""); 
+string g_imu_file("");
+int g_range(1024); // search range +- 1024 ms 
 
 int main(int argc, char* argv[])
 {
@@ -32,47 +28,35 @@ int main(int argc, char* argv[])
 
     if(argc < 3)
     {
-	ROS_WARN("usage: ./sync_time dir imu_vn100.log [from] [cnt]"); 
+	ROS_WARN("usage: ./sync_time sfm_result.log imu_vn100.log [range]"); 
 	return -1; 
     }
-    g_dir = argv[1]; 
+    g_sfm_result = argv[1]; 
     g_imu_file = argv[2]; 
     if(argc >= 4)
     {
-	g_from = atoi(argv[3]);
-	if(argc >= 5)
-	{
-	    g_cnt = atoi(argv[4]);
-	}
+	g_range = atoi(argv[3]);
     }
     
-    ROS_DEBUG("dir: %s imufile: %s from: %d to: %d", g_dir.c_str(), g_imu_file.c_str(), g_from, g_from + g_cnt); 
+    ROS_DEBUG("sfm_result: %s imufile: %s range: %d", g_sfm_result.c_str(), g_imu_file.c_str(), g_range); 
     
-    // 1. first read img 
-    map<string, string> imgList;
-    if(!readImg(g_dir + "/timestamp.txt", imgList, g_from, g_from + g_cnt))
+    // 1. read sfm_result 
+    vector<string> sfm_time; 
+    vector<vector<double>> sfm_qvs; 
+    if(!read_sfm_result(g_sfm_result, sfm_time, sfm_qvs))
     {
-	ROS_ERROR("main_sync_time failed to readImg!");
+	ROS_ERROR("main_sync_time failed to read sfm_result!");
 	return -1; 
     }
     
-    // 2. extract and track good features from these imgs
-    cv::Mat img; 
-    int cnt = 0; 
-    CTrackFeat tracker; 
-    tracker.readCamIntrinsicParam(g_cam_file); // set camera before use
-    for(auto &it : imgList)
+    // 2. read imu readings
+    vector<string> imu_time; 
+    vector<vector<double>> imu_obs;
+    if(!read_imu_vn100(g_imu_file, imu_time, imu_obs))
     {
-	string img_name = g_dir + "/" + it.second;
-	++cnt; 
-	ROS_DEBUG("main_sync_time: read %d img %s ",g_from + cnt, img_name.c_str());
-	img = cv::imread(img_name, -1); 
-	cv::imshow("raw", img); 
-	cv::waitKey(100); 
-	tracker.readImage(img); 
-	cv::Mat tracked_img = tracker.showTrack(); 
-	cv::imshow("tracked", tracked_img);
-	cv::waitKey(100); 
+	ROS_ERROR("main_sync_time: failed to read imu_vn100.log!");
+	return -1;
     }
+    
     return 0; 
 }

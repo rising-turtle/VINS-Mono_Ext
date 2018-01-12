@@ -27,15 +27,26 @@ find_package(Eigen3  REQUIRED)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
+  ../vins_estimator/src
 )
 
+## vision only SFM 
+add_executable(vision_sfm
+    src/vision_sfm.cpp
+    src/read_file.cpp
+    src/track_feature.cpp
+    src/feature_manager.cpp
+    src/bundle_adjust.cpp
+    )
+
+target_link_libraries(vision_sfm initializer ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+## align IMU's integration to SFM's result 
 add_executable(sync_time
     src/main_sync_time.cpp
     src/read_file.cpp
-    src/track_feature.cpp
-    )
-
-target_link_libraries(sync_time ${catkin_LIBRARIES} ${OpenCV_LIBS})
+)
+target_link_libraries(sync_time ${catkin_LIBRARIES})
 
 
 

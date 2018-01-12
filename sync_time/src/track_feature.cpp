@@ -54,9 +54,9 @@ void CTrackFeat::initParam()
     COL = 640; 
     ROW = 480;
     FOCAL_LENGTH = 460; 
-    MIN_DIST = 30;
+    MIN_DIST = 15; // 30
     F_THRESHOLD = 3.;
-    MAX_CNT = 150;
+    MAX_CNT = 100; // 150
 }
 
 void CTrackFeat::readImage(const cv::Mat& _img)
@@ -114,7 +114,8 @@ void CTrackFeat::readImage(const cv::Mat& _img)
 	int n_max_cnt = MAX_CNT - static_cast<int>(mvCurPts.size()); 
 	if(n_max_cnt > 0)
 	{
-	    cv::goodFeaturesToTrack(mCurImg, mvNewPts, MAX_CNT - mvCurPts.size(), 0.1, MIN_DIST, mMask); 
+	    cv::goodFeaturesToTrack(mCurImg, mvNewPts, MAX_CNT - mvCurPts.size(), 0.02, MIN_DIST, mMask); 
+	    ROS_DEBUG("track_feature: MAX_CNT - mvCurPts.size() = %d get new %d points", MAX_CNT - mvCurPts.size(), mvNewPts.size());
 	}else
 	    mvNewPts.clear(); 
     }
@@ -199,6 +200,20 @@ void CTrackFeat::setMask()
 	}
     }
     return ;
+}
+vector<cv::Point2f> CTrackFeat::undistortedPoints()
+{
+    vector<cv::Point2f> un_pts;
+    //cv::undistortPoints(cur_pts, un_pts, K, cv::Mat());
+    for (unsigned int i = 0; i < mvCurPts.size(); i++)
+    {
+        Eigen::Vector2d a(mvCurPts[i].x, mvCurPts[i].y);
+        Eigen::Vector3d b;
+        m_camera->liftProjective(a, b);
+        un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
+    }
+
+    return un_pts;
 }
 
 cv::Mat CTrackFeat::showTrack()

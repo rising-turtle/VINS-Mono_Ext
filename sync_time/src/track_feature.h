@@ -6,6 +6,8 @@ input:
 output:
     extracted feature and tracked information  
 */
+#pragma once
+
 #include <cstdio>
 #include <iostream>
 #include <queue>
@@ -45,6 +47,8 @@ public:
     vector<int> mvTrackCnt;
     
     static int sNId;
+    
+    vector<cv::Point2f> undistortedPoints(); 
 
     // camera related parameters 
     int COL;
