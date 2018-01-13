@@ -45,6 +45,9 @@ target_link_libraries(vision_sfm initializer ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(sync_time
     src/main_sync_time.cpp
     src/read_file.cpp
+    src/shift_imu.cpp
+    src/rotation_error.cpp
+    src/imu_structure.cpp
 )
 target_link_libraries(sync_time ${catkin_LIBRARIES})
 
