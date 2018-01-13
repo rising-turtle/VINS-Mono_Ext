@@ -31,6 +31,35 @@ include_directories(
 
 catkin_package()
 
+set(SOURCE_CODE 
+    src/parameters.cpp
+    src/estimator.cpp
+    src/feature_manager.cpp
+    src/factor/pose_local_parameterization.cpp
+    src/factor/projection_factor.cpp
+    src/factor/weight_projection_factor.cpp
+    src/factor/marginalization_factor.cpp
+    src/utility/utility.cpp
+    src/utility/visualization.cpp
+    src/utility/CameraPoseVisualization.cpp
+    src/initial/solve_5pts.cpp
+    src/initial/initial_aligment.cpp
+    src/initial/initial_sfm.cpp
+    src/initial/initial_ex_rotation.cpp
+    src/loop-closure/ThirdParty/DBoW/BowVector.cpp
+    src/loop-closure/ThirdParty/DBoW/FBrief.cpp
+    src/loop-closure/ThirdParty/DBoW/FeatureVector.cpp
+    src/loop-closure/ThirdParty/DBoW/QueryResults.cpp
+    src/loop-closure/ThirdParty/DBoW/ScoringObject.cpp
+    src/loop-closure/ThirdParty/DUtils/Random.cpp
+    src/loop-closure/ThirdParty/DUtils/Timestamp.cpp
+    src/loop-closure/ThirdParty/DVision/BRIEF.cpp
+    src/loop-closure/ThirdParty/VocabularyBinary.cpp
+    src/loop-closure/loop_closure.cpp
+    src/loop-closure/keyframe.cpp
+    src/loop-closure/keyframe_database.cpp
+)
+
 add_executable(vins_estimator_ext
     src/estimator_node.cpp
     src/parameters.cpp
@@ -61,8 +90,11 @@ add_executable(vins_estimator_ext
     src/loop-closure/keyframe_database.cpp
     )
 
-
 target_link_libraries(vins_estimator_ext ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES}) 
+
+add_library(initializer ${SOURCE_CODE})
+
+target_link_libraries(initializer ${catkin_LIBRARIES} ${OpenCV_LIBS} ${CERES_LIBRARIES})
 
 add_executable(check_proj_factor src/check_project_factor.cpp
     src/parameters.cpp
