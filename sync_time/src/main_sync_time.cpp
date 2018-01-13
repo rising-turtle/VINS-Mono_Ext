@@ -10,6 +10,7 @@
 #include <ros/ros.h>
 #include <fstream>
 #include <string>
+#include "shift_imu.h"
 // #include <opencv2/opencv.hpp>
 using namespace std; 
 
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
 	g_range = atoi(argv[3]);
     }
     
-    ROS_DEBUG("sfm_result: %s imufile: %s range: %d", g_sfm_result.c_str(), g_imu_file.c_str(), g_range); 
+    ROS_DEBUG("sync_time: %s imufile: %s range: %d", g_sfm_result.c_str(), g_imu_file.c_str(), g_range); 
     
     // 1. read sfm_result 
     vector<string> sfm_time; 
@@ -58,5 +59,13 @@ int main(int argc, char* argv[])
 	return -1;
     }
     
+    // 3. prepare imu data
+    CShiftIMU shift_imu; 
+    shift_imu.prepareSFMData(sfm_time, sfm_qvs); 
+    shift_imu.prepareIMUData(imu_time, imu_obs); 
+
+    double time_shift = shift_imu.findIt(g_range); 
+    cout <<"sync_time: time_shift = "<<time_shift<<" s "<<time_shift*1000.<<" ms"<<endl;
+
     return 0; 
 }
