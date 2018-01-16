@@ -50,6 +50,7 @@ class Estimator
     // interface
     void processIMU(double t, const Vector3d &linear_acceleration, const Vector3d &angular_velocity);
     void processImage(const map<int, vector<pair<int, Vector3d>>> &image, const std_msgs::Header &header);
+    void processImageForInit(const map<int, vector<pair<int, Vector3d>>> &image, const std_msgs::Header &header);
 
     // internal
     void clearState();

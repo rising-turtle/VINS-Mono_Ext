@@ -39,7 +39,7 @@ add_executable(vision_sfm
     src/bundle_adjust.cpp
     )
 
-target_link_libraries(vision_sfm initializer ${catkin_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(vision_sfm vins_mono ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 ## align IMU's integration to SFM's result 
 add_executable(sync_time
@@ -50,6 +50,17 @@ add_executable(sync_time
     src/imu_structure.cpp
 )
 target_link_libraries(sync_time ${catkin_LIBRARIES})
+
+## align IMU's integration to minimize TIC error
+add_executable(sync_time2
+    src/main_sync_time2.cpp
+    src/read_file.cpp
+    src/shift_imu2.cpp
+    src/estimator_wrapper.cpp
+    src/imu_structure.cpp
+    src/track_feature.cpp)
+target_link_libraries(sync_time2 vins_mono ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
 
 
 

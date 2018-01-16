@@ -1,6 +1,8 @@
 #include "estimator.h"
 
-Estimator::Estimator(): f_manager{Rs, Ps}
+Estimator::Estimator(): f_manager{Rs, Ps},
+tmp_pre_integration(nullptr), 
+last_marginalization_info(nullptr)
 {
     ROS_INFO("init begins");
     clearState();
@@ -104,6 +106,64 @@ void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const
     }
     acc_0 = linear_acceleration;
     gyr_0 = angular_velocity;
+}
+
+void Estimator::processImageForInit(const map<int, vector<pair<int, Vector3d>>> &image, const std_msgs::Header &header)
+{
+    if (f_manager.addFeatureCheckParallax(frame_count, image))
+        marginalization_flag = MARGIN_OLD;
+    else
+        marginalization_flag = MARGIN_SECOND_NEW;
+
+    // ROS_DEBUG("this frame is--------------------%s", marginalization_flag ? "reject" : "accept");
+    // ROS_DEBUG("%s", marginalization_flag ? "Non-keyframe" : "Keyframe");
+    // ROS_DEBUG("Solving %d", frame_count);
+    // ROS_DEBUG("number of feature: %d", f_manager.getFeatureCount());
+    Headers[frame_count] = header;
+
+    // static int n_f = 0; 
+    // static int f_sum = 0; 
+    // int f1 = f_manager.getFeatureCount(); 
+    // f_sum += f1;
+    // ROS_WARN("frame %d has %d features", ++n_f, f1);
+    // ROS_WARN("avg has %d features", f_sum / n_f);
+
+    ImageFrame imageframe(image, header.stamp.toSec());
+    imageframe.pre_integration = tmp_pre_integration;
+    all_image_frame.insert(make_pair(header.stamp.toSec(), imageframe));
+    tmp_pre_integration = new IntegrationBase{acc_0, gyr_0, Bas[frame_count], Bgs[frame_count]};
+
+   if (solver_flag == INITIAL)
+    {
+        if (frame_count == WINDOW_SIZE)
+        {
+            bool result = false;
+            if( ESTIMATE_EXTRINSIC != 2 && (header.stamp.toSec() - initial_timestamp) > 0.1)
+            {
+               result = initialStructure();
+               initial_timestamp = header.stamp.toSec();
+            }
+            if(result)
+            {
+                solver_flag = NON_LINEAR;
+                solveOdometry();
+                // slideWindow();
+                // f_manager.removeFailures();
+                // ROS_INFO("Initialization finish!");
+                // last_R = Rs[WINDOW_SIZE];
+                // last_P = Ps[WINDOW_SIZE];
+                // last_R0 = Rs[0];
+                // last_P0 = Ps[0];
+            }
+            else
+                slideWindow();
+        }
+        else
+            frame_count++;
+    }
+
+return ; 
+
 }
 
 void Estimator::processImage(const map<int, vector<pair<int, Vector3d>>> &image, const std_msgs::Header &header)
