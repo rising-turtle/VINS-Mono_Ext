@@ -69,7 +69,8 @@ bool CBundleAdjust::SFM(CFeatManager* pFM, vector<string> timestamp)
    // write 
     if(mbRecordResult)
     {
-	assert(mFrameCnt + 1 == timestamp.size());
+	cout <<"mFrameCnt = "<<mFrameCnt<<" timestamp.size() = "<<timestamp.size()<<endl;
+	assert(mFrameCnt + 1  == timestamp.size());
 	ofstream rf("sfm_result.log"); 
 	for(int i=0; i<= mFrameCnt; i++)
 	{
@@ -83,10 +84,11 @@ bool CBundleAdjust::SFM(CFeatManager* pFM, vector<string> timestamp)
 bool CBundleAdjust::relativePose( Eigen::Matrix3d &relative_R, Eigen::Vector3d &relative_T, int &l, CFeatManager* pFM)
 {
         // find previous frame which contians enough correspondance and parallex with newest frame
-    for (int i = 0; i < mFrameCnt; i++)
+    for (int i = 0; i <= mFrameCnt; i++)
     {
         vector<pair<Vector3d, Vector3d>> corres;
         corres = pFM->getCorresponding(i, mFrameCnt);
+	 ROS_DEBUG("bundle_adjust: i = %d mFrameCnt = %d, corres.size() = %d", i, mFrameCnt, corres.size());
         if (corres.size() > 20)
         {
             double sum_parallax = 0;
@@ -100,6 +102,7 @@ bool CBundleAdjust::relativePose( Eigen::Matrix3d &relative_R, Eigen::Vector3d &
 
             }
             average_parallax = 1.0 * sum_parallax / int(corres.size());
+	     ROS_DEBUG("bundle_adjust: i = %d corres.size() = %d, average_parallax = %lf", i, corres.size(), average_parallax);
             if(average_parallax * 460 > 30 && m_estimator.solveRelativeRT(corres, relative_R, relative_T))
             {
                 l = i;

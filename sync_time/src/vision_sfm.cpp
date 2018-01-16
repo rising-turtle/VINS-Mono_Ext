@@ -61,14 +61,14 @@ int main(int argc, char* argv[])
     
     // 2. extract and track good features from these imgs
     cv::Mat img; 
-    int cnt = -1; 
+    int cnt = -1;
+    int kcnt = -1;
     CTrackFeat tracker; 
     tracker.readCamIntrinsicParam(g_cam_file); // set camera before use
     CFeatManager fm; 
     vector<string> timestamp;
     for(auto &it : imgList)
     {	
-	timestamp.push_back(it.first); 
 	string img_name = g_dir + "/" + it.second;
 	++cnt; 
 	ROS_DEBUG("vision_sfm: read %d img %s ",g_from + cnt, img_name.c_str());
@@ -76,7 +76,13 @@ int main(int argc, char* argv[])
 	cv::imshow("raw", img); 
 	cv::waitKey(100); 
 	tracker.readImage(img); // extract and track good features
-	fm.addFeature(cnt, tracker.mvIds, tracker.undistortedPoints()); 
+	if(tracker.mbPubFrame)
+	{
+	    timestamp.push_back(it.first); 
+	    fm.addFeature(++kcnt, tracker.mvIds, tracker.undistortedPoints()); 
+	    vector<pair<Eigen::Vector3d, Eigen::Vector3d>> corres = fm.getCorresponding(0, kcnt); 
+	    cout <<"vision_sfm: corres between: 0 and "<<kcnt<<" has "<<corres.size()<<" features"<<endl;
+	}
 	cv::Mat tracked_img = tracker.showTrack(); 
 	cv::imshow("tracked", tracked_img);
 	cv::waitKey(100); 
@@ -84,7 +90,7 @@ int main(int argc, char* argv[])
 
     // 3. structure from motion 
     ROS_DEBUG("vision_sfm: finish track features, start SFM"); 
-    CBundleAdjust ba(g_cnt);
+    CBundleAdjust ba(kcnt);
     ba.SFM(&fm, timestamp); 
 
     return 0; 

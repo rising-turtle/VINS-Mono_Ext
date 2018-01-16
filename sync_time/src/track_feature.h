@@ -32,14 +32,20 @@ public:
     
     void initParam(); 
     void readImage(const cv::Mat& img); 
+    void getFeat(map<int, vector<pair<int, Eigen::Vector3d>> >& feat);
+    
+    void getListFeat(vector<cv::Mat>& vImgs, vector<map<int, vector<pair<int, Eigen::Vector3d>> >>& vfeat); 
+
     void rejectWithF(); 
     void setMask(); 
     void addPoints();
     cv::Mat showTrack(); 
 
     cv::Mat mCurImg;
+    cv::Mat mForImg;
     cv::Mat mPreImg;
     cv::Mat mMask;
+    vector<cv::Point2f> mvForPts;
     vector<cv::Point2f> mvCurPts;
     vector<cv::Point2f> mvPrePts;
     vector<cv::Point2f> mvNewPts; 
@@ -49,6 +55,7 @@ public:
     static int sNId;
     
     vector<cv::Point2f> undistortedPoints(); 
+    bool mbPubFrame;
 
     // camera related parameters 
     int COL;
