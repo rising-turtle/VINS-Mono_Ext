@@ -21,9 +21,10 @@ string g_dir("");
 string g_imu_file(""); 
 int g_range = 512; //1024; 
 int g_from = 30; 
-int g_cnt = 300; 
+int g_cnt = 100; 
 
 string g_cam_file("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/config/robocane_config.yaml"); 
+// string g_cam_file("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/config/robocane_config_320.yaml"); 
 extern bool read_imu_vn100(string fname, vector<string>& timestamp, vector<vector<double> > & imu); 
 
 template<typename T>

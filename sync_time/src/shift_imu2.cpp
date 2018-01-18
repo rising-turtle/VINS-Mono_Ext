@@ -83,8 +83,8 @@ double CShiftIMUByTIC::findIt(int range) // find best shift ms
 	    break; 
 	}else{
 	    step/=2; 
-	    fi = min_i - 50 * step;
-	    ti = min_i + 50 * step; 
+	    fi = min_i - 20 * step;
+	    ti = min_i + 20 * step; 
 	}
     }
     return ret; 

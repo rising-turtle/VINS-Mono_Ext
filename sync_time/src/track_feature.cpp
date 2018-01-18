@@ -53,10 +53,10 @@ CTrackFeat::~CTrackFeat(){}
 void CTrackFeat::initParam()
 {
     // tune parameters according to camera 
-    COL = 640; 
-    ROW = 480;
-    FOCAL_LENGTH = 460; 
-    MIN_DIST = 15; // 30
+    COL = 640; // 320; // 640; 
+    ROW = 480; // 240; // 480;
+    FOCAL_LENGTH = 460; // 460
+    MIN_DIST = 30; // 15; // 30
     F_THRESHOLD = 3.;
     MAX_CNT = 200; // 150
 }
