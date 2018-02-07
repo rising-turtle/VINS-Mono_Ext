@@ -1,10 +1,12 @@
 %% 
 % Feb. 5 2018, He Zhang, hxzhang1@ualr.edu
 % simulate swing motion 
-
+function [obs, pts, vfeats] = swing_simulation(tilt, H)
 %% parameters 
-H = 1.2; % camera's height installed in robocane
-tilt = 30.*pi/180.; % camera's tilt angle
+if nargin == 0
+    H = 1.2; % camera's height installed in robocane
+    tilt = 30.*pi/180.; % camera's tilt angle
+end
 
 %% generate features 
 % assume features 
@@ -14,31 +16,32 @@ y = [0:step:12];
 z = 0; 
 vfeats = createFeatureHorizontal(x, y, z); % create a number of features on a plane
 
-
-
 %% generate trajectory 
 px = [-0.7:0.2:0.7]; 
 n_swing = 7; 
 pts = createTrajectory(px, H, n_swing); % create trajectory swing motion 
 
-
-
 %% generate observations 
 % given camera pose, and feature locations, generate observations
 obs = createObservations(vfeats, pts, tilt); 
 
-%% show it
-for i =1:length(obs)
-    obs_i = obs(i);
-    for j = 1:length(obs_i.obs)
-        obs_ij = obs_i.obs(j); 
-        fprintf('pose_id %d feat_id %d obs_x: %f obs_y %f\n', obs_ij.pose_id, ...
-            obs_ij.feat_id, obs_ij.obs_x, obs_ij.obs_y);
-        fprintf('gpt: %f %f %f, lpt: %f %f %f\n', obs_ij.gpt(1), obs_ij.gpt(2), ...
-            obs_ij.gpt(3), obs_ij.lpt(1), obs_ij.lpt(2), obs_ij.lpt(3));
-    end
+% show_obs(obs);
+
 end
 
+%% show it
+function show_obs(obs)
+    for i =1:length(obs)
+        obs_i = obs(i);
+        for j = 1:length(obs_i.obs)
+            obs_ij = obs_i.obs(j);
+            fprintf('pose_id %d feat_id %d obs_x: %f obs_y %f\n', obs_ij.pose_id, ...
+                obs_ij.feat_id, obs_ij.obs_x, obs_ij.obs_y);
+            fprintf('gpt: %f %f %f, lpt: %f %f %f\n', obs_ij.gpt(1), obs_ij.gpt(2), ...
+                obs_ij.gpt(3), obs_ij.lpt(1), obs_ij.lpt(2), obs_ij.lpt(3));
+        end
+    end
+end
 
 
 
