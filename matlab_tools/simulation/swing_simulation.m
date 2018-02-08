@@ -10,14 +10,14 @@ end
 
 %% generate features 
 % assume features 
-step = 0.4; 
+step = 1; 
 x = [-2.2:step:2.2];
 y = [0:step:12]; 
 z = 0; 
 vfeats = createFeatureHorizontal(x, y, z); % create a number of features on a plane
 
 %% generate trajectory 
-px = [-0.7:0.2:0.7]; 
+px = [-0.7:0.3:0.7]; 
 n_swing = 7; 
 pts = createTrajectory(px, H, n_swing); % create trajectory swing motion 
 

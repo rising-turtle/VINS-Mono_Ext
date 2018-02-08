@@ -9,7 +9,7 @@ end
 
 %% generate swing motion given tilt angle and H
 tilt = 30.*pi/180.;
-H = 1.2;
+H = 3; % 1.2
 R = tiltR(tilt);
 [obs, pts, vfeats] = swing_simulation(tilt, H); 
 
@@ -22,7 +22,10 @@ options.nrCameras = size(pts,1);
 for i=1:length(vfeats)
     feat = vfeats(i);
     truth.points{i} = Point3([feat.x, feat.y, feat.z]');
-    truth.point_id{i} = feat.id;
+    truth.point_id{feat.id} = i;  % feat located at index i
+    truth.point_cnt{feat.id} = 0; % cnt the number of times this feat has been observed
+    truth.point_first{feat.id} = -1; % first pose id when this feat is observed
+    truth.point_first_z{feat.id} = Point2;
 end
 
 %% camera poses
@@ -34,11 +37,13 @@ for i=1:length(pts)
     t = Point3(pt');
     % truth.cameras{i} = SimpleCamera.Lookat(t, Point3, Point3([0,0,1]'), truth.K);
     pose = Pose3(gtR, t); 
-    truth.cameras{i} = CalibratedCamera(pose); 
+    truth.cameras{i} = SimpleCamera(pose, truth.K);
     obs_i = obs(i);
     for j=1:length(obs_i.obs)
         obs_ij = obs_i.obs(j);
-        data.Z{i}{j} = Point2(obs_ij.obs_x, obs_ij.obs_y);
+        % data.Z{i}{j} = Point2(obs_ij.obs_x, obs_ij.obs_y);
+        % data.Z{i}{j} = truth.cameras{i}.project(truth.points{truth.point_id{obs_ij.feat_id}});
+        data.Z{i}{j} = truth.cameras{i}.project(Point3(obs_ij.gpt'));
         data.J{i}{j} = obs_ij.feat_id;
     end
 end

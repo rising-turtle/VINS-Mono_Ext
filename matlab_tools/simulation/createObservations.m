@@ -88,8 +88,8 @@ function [good, px, py] = in_cam_view(cam, pt)
         return;
     end
     
-    dx = 120;
-    dy = 70;
+    dx = 20;
+    dy = 20;
     px = cam.cx + cam.fx * pt(1)/pt(3);
     py = cam.cy + cam.fy * pt(2)/pt(3);
     if px > dx && px < cam.width - dx  && py >dy && py < cam.height - dy

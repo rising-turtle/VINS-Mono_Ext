@@ -6,7 +6,7 @@ function options = default_option()
 
     % iSAM Options
     options.hardConstraint = false;
-    options.pointPriors = false;
+    options.pointPriors = true;
     options.batchInitialization = true;
     options.reorderInterval = 10;
     options.alwaysRelinearize = false;

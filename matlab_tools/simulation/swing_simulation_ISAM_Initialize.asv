@@ -1,7 +1,7 @@
 %% 
 % Feb. 7 2018, He Zhang, hxzhang1@ualr.edu
 % Initalize ISAM structure use the first pose and feature point 
-function [ noiseModels,isam,result,nextPoseIndex, new_truth] = swing_simulation_ISAM_Initialize(data, truth, options)
+function [ noiseModels,isam,result,nextPoseIndex] = swing_simulation_ISAM_Initialize(data, truth, options)
     
 %% Initialize iSAM
 import gtsam.*
@@ -12,7 +12,7 @@ import gtsam.*
 noiseModels.pose = noiseModel.Diagonal.Sigmas([0.001 0.001 0.001 0.1 0.1 0.1]');
 %noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.001 0.001 0.001 0.1 0.1 0.1]');
 % noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.05 0.05 0.05 0.2 0.2 0.2]');
-noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.005 0.005 0.005 0.05 0.05 0.05]');
+noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.005 0.005 0.05 0.2 0.2 0.2]');
 noiseModels.point = noiseModel.Isotropic.Sigma(3, 0.1);
 noiseModels.measurement = noiseModel.Isotropic.Sigma(2, 1.0);
 
@@ -43,10 +43,6 @@ for i=1:2
         j = data.J{i}{k};
         jj = symbol('l',data.J{i}{k});
         newFactors.add(GenericProjectionFactorCal3_S2(data.Z{i}{k}, noiseModels.measurement, ii, jj, data.K));
-        if truth.point_cnt{j} == 0
-            truth.point_first{j} = i; 
-        end
-        truth.point_cnt{j} = truth.point_cnt{j} + 1; % 1 means this factor has been added
         % TODO: initial estimates should not be from ground truth!
         if ~initialEstimates.exists(jj)
             initialEstimates.insert(jj, truth.points{truth.point_id{j}});
@@ -73,8 +69,5 @@ end
 % figure(1);tic;
 % t=toc; plot(frame_i,t,'r.'); tic
 result = isam.calculateEstimate();
-
-% since truth has been changed
-new_truth = truth; 
 
 end
