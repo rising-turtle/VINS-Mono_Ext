@@ -32,7 +32,7 @@ end
 
 %% draw
 % axis([-40 40 -40 40 -10 20]);axis equal
-axis([-2 2 -1 12 -2 2]);axis equal
+axis([-2 2 -1 14 -1 4]);axis equal
 view(3)
 colormap('hot')
 drawnow

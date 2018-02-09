@@ -1,0 +1,77 @@
+%%
+% Feb. 9 2018, He Zhang, hxzhang1@ualr.edu
+% plot the result of isam2
+function swing_simulation_Plot(truth, isam, result, options)
+
+h=gca;
+cla(h);
+hold on;
+
+%% Plot points
+% Can't use data because current frame might not see all points
+marginals = Marginals(isam.getFactorsUnsafe(), isam.calculateEstimate()); % TODO - this is slow
+gtsam.plot3DPoints(result, [], []);
+
+%% Plot cameras
+import gtsam.*
+M = 1;
+while result.exists(symbol('x',M))
+    ii = symbol('x',M);
+    pose_i = result.at(ii);
+    if options.hardConstraint && (M==1)
+        gtsam.plotPose3(pose_i,[],1); % 10
+    else
+        P = marginals.marginalCovariance(ii);
+        gtsam.plotPose3(pose_i,P,1); % 10
+    end
+    if options.drawTruePoses % show ground truth
+        gtsam.plotPose3(truth.cameras{M}.pose,[],1);
+    end
+    
+    M = M + options.cameraInterval;
+end
+
+%% draw
+% axis([-40 40 -40 40 -10 20]);axis equal
+axis([-2 2 -1 14 -1 4]);axis equal
+view(3)
+colormap('hot')
+drawnow
+grid on;
+xlabel('x')
+ylabel('y')
+zlabel('z')
+
+end
+
+%% plot camera pose
+function plot_pose3(pose, P)
+    if (naginin >= 2) && (~isempty(P))
+        gRp = pose.rotation().matrix();  % rotation from pose to global
+        C = pose.translation().vector();
+        en
+    
+end
+
+%% plot axis 
+function plot_axis(pose, axisLength)
+    % get rotation and translation (center)
+    gRp = pose.rotation().matrix();  % rotation from pose to global
+    C = pose.translation().vector();
+
+    if ~isempty(axisLength)
+        % draw the camera axes
+        xAxis = C+gRp(:,1)*axisLength;
+        L = [C xAxis]';
+        line(L(:,1),L(:,2),L(:,3),'Color','r');
+
+        yAxis = C+gRp(:,2)*axisLength;
+        L = [C yAxis]';
+        line(L(:,1),L(:,2),L(:,3),'Color','g');
+
+        zAxis = C+gRp(:,3)*axisLength;
+        L = [C zAxis]';
+        line(L(:,1),L(:,2),L(:,3),'Color','b');
+    end
+end
+

@@ -18,7 +18,7 @@ vfeats = createFeatureHorizontal(x, y, z); % create a number of features on a pl
 
 %% generate trajectory 
 px = [-0.7:0.3:0.7]; 
-n_swing = 7; 
+n_swing = 3; % 7; 
 pts = createTrajectory(px, H, n_swing); % create trajectory swing motion 
 
 %% generate observations 
