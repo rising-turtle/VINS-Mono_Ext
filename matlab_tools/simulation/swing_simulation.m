@@ -12,7 +12,7 @@ end
 % assume features 
 step = 1; 
 x = [-2.2:step:2.2];
-y = [0:step:12]; 
+y = [0:step:14]; 
 z = 0; 
 vfeats = createFeatureHorizontal(x, y, z); % create a number of features on a plane
 

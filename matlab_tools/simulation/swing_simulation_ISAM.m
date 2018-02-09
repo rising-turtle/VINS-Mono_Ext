@@ -7,7 +7,7 @@ function [ data, truth ] = swing_simulation_ISAM(options)
     end
     import gtsam.*
     %% Generate data
-    [data,truth] = swing_simulation_ISAM_data(options);
+    [data,truth, options] = swing_simulation_ISAM_data(options);
     
     %% Initialize iSAM with the first pose and points
     options.hardConstraint = true;
@@ -19,7 +19,7 @@ function [ data, truth ] = swing_simulation_ISAM(options)
 for frame_i=3:options.nrCameras
     [isam,result,nextPose, new_truth] = swing_simulation_ISAM_Step(data,noiseModels,isam,result,new_truth,nextPose);
     if mod(frame_i,options.drawInterval)==0
-        swing_simulation_ISAM_Plot(new_truth, data, isam, result, options)
+      swing_simulation_ISAM_Plot(new_truth, data, isam, result, options)
     end
 end
     

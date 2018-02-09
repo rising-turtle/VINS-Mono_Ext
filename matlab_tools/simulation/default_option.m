@@ -12,9 +12,9 @@ function options = default_option()
     options.alwaysRelinearize = false;
 
     % Display Options
-    options.saveDotFile = false;
+    options.saveDotFile = true; % false
     options.printStats = false;
-    options.drawInterval = 5;
+    options.drawInterval = 10;
     options.cameraInterval = 1;
     options.drawTruePoses = false;
     options.saveFigures = false;

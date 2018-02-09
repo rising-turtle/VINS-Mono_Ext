@@ -18,24 +18,28 @@ while result.exists(symbol('x',M))
     ii = symbol('x',M);
     pose_i = result.at(ii);
     if options.hardConstraint && (M==1)
-        gtsam.plotPose3(pose_i,[],10);
+        gtsam.plotPose3(pose_i,[],1); % 10
     else
         P = marginals.marginalCovariance(ii);
-        gtsam.plotPose3(pose_i,P,10);
+        gtsam.plotPose3(pose_i,P,1); % 10
     end
     if options.drawTruePoses % show ground truth
-        gtsam.plotPose3(truth.cameras{M}.pose,[],10);
+        gtsam.plotPose3(truth.cameras{M}.pose,[],1);
     end
     
     M = M + options.cameraInterval;
 end
 
 %% draw
-axis([-40 40 -40 40 -10 20]);axis equal
+% axis([-40 40 -40 40 -10 20]);axis equal
+axis([-2 2 -1 12 -2 2]);axis equal
 view(3)
 colormap('hot')
 drawnow
-
+grid on;
+xlabel('x')
+ylabel('y')
+zlabel('z')
 %% do various optional things
 
 if options.saveFigures
