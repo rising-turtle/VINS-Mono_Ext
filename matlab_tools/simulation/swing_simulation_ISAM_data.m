@@ -1,7 +1,7 @@
 %% 
 % Feb. 7 2018, He Zhang, hxzhang1@ualr.edu
 % generate swing motion data, and save it into GTSAM's data structure 
-function [ data, truth, options ] = swing_simulation_ISAM_data(options)
+function [ data, truth, options] = swing_simulation_ISAM_data(options)
 
 if nargin == 0
     options = default_option();
