@@ -70,7 +70,7 @@ for i=1:size(pts,1)
                 end
                 
             end
-            obs_ij = generate_obs(feats(j), i, fpt, px, py);
+            % obs_ij = generate_obs(feats(j), i, fpt, px, py);
             s_obi.obs = [s_obi.obs; obs_ij];
         end
     end
@@ -95,6 +95,7 @@ end
 
 %% generate observation for this point
 function obs = generate_obs_new(gpt, lpt,  pose_id, feat_id, px, py)
+    gpt = [gpt(1) gpt(2) gpt(3)];
     obs.gpt = gpt;
     obs.lpt = lpt;
     obs.pose_id = pose_id;

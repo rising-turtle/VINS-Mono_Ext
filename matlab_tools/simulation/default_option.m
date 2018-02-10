@@ -19,4 +19,7 @@ function options = default_option()
     options.drawTruePoses = false;
     options.saveFigures = false;
     options.saveDotFiles = false;
+    
+    % plot rmse
+    options.rmse_ratio = false;
 end

@@ -12,6 +12,8 @@ function pts = createTrajectory(x, z, n)
     y1 = -sx / sqrt(3); 
     r = -2*y1;
     inc_y = 0;
+    global g_param; 
+    cnt = 0;
     for k=1:n
         % swing to
         py = 0;
@@ -19,6 +21,11 @@ function pts = createTrajectory(x, z, n)
             px = x(i); 
             py = f(px, x(end), y1 + inc_y, r);
             pts = [pts; px, py, z];
+            cnt = cnt + 1;
+            if cnt >= g_param.num_pts
+                return;
+            end
+                
         end
         inc_y = py; 
         
@@ -27,6 +34,10 @@ function pts = createTrajectory(x, z, n)
             px = x(i);
             py = f(px, x(1), y1 + inc_y, r);
             pts = [pts; px, py, z];
+            cnt = cnt + 1;
+            if cnt >= g_param.num_pts
+                return;
+            end
         end
         inc_y = py;
     end

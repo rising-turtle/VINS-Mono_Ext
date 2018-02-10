@@ -14,16 +14,16 @@ param_global;
 % options1.rmse_ratio = true;
 rmse1 = computeRMSE(result1, truth1, options1); 
 
-plot(rmse1, 'g-*');
+plot()
 
 % [ data2, truth2, isam2, result2, options2 ] = swing_simulation_ISAM_VINS(); 
 % options2.drawTruePoses = true;
 % swing_simulation_Plot(truth2, isam2, result2, options2);
 % options2.rmse_ratio = true;
-[ data2, truth2, result2, options2 ] = swing_simulation_SFM_VINS(); 
-rmse2 = computeRMSE(result2, truth2, options2); 
+% [ data2, truth2, result2, options2 ] = swing_simulation_SFM_VINS(); 
+% rmse2 = computeRMSE(result2, truth2, options2); 
 
- plotRMSE(rmse1, rmse2);
+% plotRMSE(rmse1, rmse2);
 
 
 

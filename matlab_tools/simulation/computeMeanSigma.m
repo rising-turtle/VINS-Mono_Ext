@@ -5,13 +5,13 @@ function [mu, sigma] = computeMeanSigma(T)
 
 %% compute mean 
 import gtsam.*
-mu = zeros(M, 3); 
 M = size(T{1}, 1); 
+mu = zeros(M, 3); 
 for i = 1:M
     e_pts = [];
     for j = 1:length(T)
         pt = T{j}(i, :);
-        e_pts = [e_pts, pt];
+        e_pts = [e_pts; pt];
     end
     mu(i, : ) = mean(e_pts); 
 end

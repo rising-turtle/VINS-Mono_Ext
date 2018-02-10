@@ -3,22 +3,24 @@
 % simulate swing motion 
 function [obs, pts, vfeats] = swing_simulation_data(tilt, H)
 %% parameters 
+param_global;
+global g_param;
 if nargin == 0
-    H = 1.2; % camera's height installed in robocane
+    H = g_param.H; % camera's height installed in robocane
     tilt = 30.*pi/180.; % camera's tilt angle
 end
 
 %% generate features 
 % assume features 
-step = 1; 
+step = g_param.feature_step; 
 x = [-2.2:step:2.2];
 y = [0:step:14]; 
 z = 0; 
 vfeats = createFeatureHorizontal(x, y, z); % create a number of features on a plane
 
 %% generate trajectory 
-px = [-0.7:0.3:0.7]; 
-n_swing = 3; % 7; 
+px = [-0.7:g_param.pose_step:0.7]; 
+n_swing = g_param.swing_times; % 7; 
 pts = createTrajectory(px, H, n_swing); % create trajectory swing motion 
 
 %% generate observations 

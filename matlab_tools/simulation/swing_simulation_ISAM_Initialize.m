@@ -7,14 +7,18 @@ function [ noiseModels,isam,result,nextPoseIndex, new_truth] = swing_simulation_
 import gtsam.*
 isam = ISAM2; 
 
+param_global;
+global g_param;
+
 %% Set Noise parameters
 import gtsam.*
 noiseModels.pose = noiseModel.Diagonal.Sigmas([0.001 0.001 0.001 0.1 0.1 0.1]');
 %noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.001 0.001 0.001 0.1 0.1 0.1]');
 % noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.05 0.05 0.05 0.2 0.2 0.2]');
-noiseModels.odometry = noiseModel.Diagonal.Sigmas([0.005 0.005 0.005 0.05 0.05 0.05]');
-noiseModels.point = noiseModel.Isotropic.Sigma(3, 0.1);
-noiseModels.measurement = noiseModel.Isotropic.Sigma(2, 1.0);
+noiseModels.odometry = noiseModel.Diagonal.Sigmas([g_param.odo_R_std g_param.odo_R_std ... 
+    g_param.odo_R_std g_param.odo_t_std g_param.odo_t_std g_param.odo_t_std]');
+noiseModels.point = noiseModel.Isotropic.Sigma(3, g_param.pt_std);
+noiseModels.measurement = noiseModel.Isotropic.Sigma(2, g_param.pix_std);
 
 %% Add constraints/priors
 % TODO: should not be from ground truth!

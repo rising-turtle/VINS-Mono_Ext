@@ -1,0 +1,67 @@
+%% 
+% Feb. 10 2018, He Zhang, hxzhang1@ualr.edu
+% run SFM using swing motion data, and then plot and save results  
+function [ data, truth, result, options ] = swing_simulation_SFM(options)
+    param_global;
+    global g_param;
+    if nargin == 0
+        options = default_option();
+    end
+    import gtsam.*
+    %% Generate data
+    tilt = 30.*pi/180.;
+    H = g_param.H; % 1.2
+    R = tiltR(tilt);
+    [obs, pts, vfeats] = swing_simulation_data(tilt, H); 
+    [data,truth, options] = swing_simulation_ISAM_data(options, obs, pts, vfeats, R);
+    
+    measurementNoiseSigma = g_param.pix_std;
+    pointNoiseSigma = g_param.pt_std;
+    poseNoiseSigmas = [0.0001 0.0001 0.0001 0.001 0.001 0.001]';
+    
+    %% Create the graph (defined in visualSLAM.h, derived from NonlinearFactorGraph)
+    graph = NonlinearFactorGraph;
+    
+    
+    %% Add factors for all measurements
+    measurementNoise = noiseModel.Isotropic.Sigma(2,measurementNoiseSigma);
+    for i=1:length(data.Z)
+        for k=1:length(data.Z{i})
+            j = data.J{i}{k};
+            graph.add(GenericProjectionFactorCal3_S2(data.Z{i}{k}, measurementNoise, symbol('x',i), symbol('p',j), data.K));
+        end
+    end
+    
+    %% Add Gaussian priors for a pose and a landmark to constrain the system
+    posePriorNoise  = noiseModel.Diagonal.Sigmas(poseNoiseSigmas);
+    graph.add(PriorFactorPose3(symbol('x',1), truth.cameras{1}.pose, posePriorNoise));
+    pointPriorNoise  = noiseModel.Isotropic.Sigma(3,pointNoiseSigma);
+    graph.add(PriorFactorPoint3(symbol('p',1), truth.points{1}, pointPriorNoise));
+
+    graph.print(sprintf('\nFactor graph:\n'));
+    
+    %% Initialize cameras and points close to ground truth in this example
+    initialEstimate = Values;
+    for i=1:size(truth.cameras,2)
+        pose_i = truth.cameras{i}.pose.retract([g_param.odo_R_std*randn(3,1);...
+                    g_param.odo_t_std*randn(3,1)]);
+        initialEstimate.insert(symbol('x',i), pose_i);
+    end
+    for j=1:size(truth.points,2)
+  
+        point_j = truth.points{j}.retract(g_param.pt_std*randn(3,1));
+        initialEstimate.insert(symbol('p',j), point_j);
+    end
+    initialEstimate.print(sprintf('\nInitial estimate:\n  '));
+    %% Fine grain optimization, allowing user to iterate step by step
+    parameters = LevenbergMarquardtParams;
+    parameters.setlambdaInitial(1.0);
+    parameters.setVerbosityLM('trylambda');
+
+    optimizer = LevenbergMarquardtOptimizer(graph, initialEstimate, parameters);
+    for i=1:5
+        optimizer.iterate();
+    end
+    result = optimizer.values();
+end
+

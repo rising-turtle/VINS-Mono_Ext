@@ -2,13 +2,15 @@
 % Feb. 7 2018, He Zhang, hxzhang1@ualr.edu
 % run ISAM using swing motion data, and then plot and save results  
 function [ data, truth, isam, result, options ] = swing_simulation_ISAM(options)
+    param_global;
+    global g_param;
     if nargin == 0
         options = default_option();
     end
     import gtsam.*
     %% Generate data
     tilt = 30.*pi/180.;
-    H = 3; % 1.2
+    H = g_param.H; % 1.2
     R = tiltR(tilt);
     [obs, pts, vfeats] = swing_simulation_data(tilt, H); 
     [data,truth, options] = swing_simulation_ISAM_data(options, obs, pts, vfeats, R);
@@ -27,12 +29,4 @@ for frame_i=3:options.nrCameras
     end
 end
     
-end
-
-function R = tiltR(tilt)
-    angle = -(pi/2+tilt);
-    ca = cos(angle); sa = sin(angle);
-    R = [1 0 0;
-     0 ca -sa;
-     0 sa ca;];
 end

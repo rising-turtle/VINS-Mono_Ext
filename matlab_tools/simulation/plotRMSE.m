@@ -11,5 +11,5 @@ xlabel('Number of Poses');
 ylabel('RMSE'); 
 plot(rmse2, 'r-.s');
 
-
+legend('proposed', 'VINS-Mono');
 end

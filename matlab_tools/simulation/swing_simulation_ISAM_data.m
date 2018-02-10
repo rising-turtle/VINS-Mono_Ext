@@ -16,6 +16,7 @@ for i=1:length(vfeats)
     truth.point_cnt{feat.id} = 0; % cnt the number of times this feat has been observed
     truth.point_first{feat.id} = -1; % first pose id when this feat is observed
     truth.point_first_z{feat.id} = Point2;
+    truth.point_i_obs{i} = 0; % number of this feature been observed, used in SFM
 end
 
 %% camera poses
@@ -35,6 +36,7 @@ for i=1:length(pts)
         % data.Z{i}{j} = truth.cameras{i}.project(truth.points{truth.point_id{obs_ij.feat_id}});
         data.Z{i}{j} = truth.cameras{i}.project(Point3(obs_ij.gpt'));
         data.J{i}{j} = obs_ij.feat_id;
+        truth.point_i_obs{obs_ij.feat_id} = truth.point_i_obs{obs_ij.feat_id} + 1;
     end
 end
 
@@ -54,8 +56,8 @@ if options.showImages
 end
 
 %% Calculate odometry between cameras
-odometry = truth.cameras{1}.pose.between(truth.cameras{2}.pose);
 for i=1:options.nrCameras-1
+    odometry = truth.cameras{i}.pose.between(truth.cameras{i+1}.pose);
     data.odometry{i}=odometry;
 end
 
