@@ -1,0 +1,53 @@
+%%
+% Feb. 9 2018, He Zhang, hxzhang1@ualr.edu
+% plot the result of isam2
+function e_pts = extractTrajectory(result, options)
+
+%% Plot cameras
+import gtsam.*
+M = 1;
+
+%% gt_pts, and estimate_pts 
+e_pts = [];
+
+while result.exists(symbol('x',M))
+    ii = symbol('x',M);
+    pose_i = result.at(ii);
+
+    if options.hardConstraint && (M==1)
+        plot_pose3(pose_i,[]); % 10
+    else
+        P = marginals.marginalCovariance(ii);
+        plot_pose3(pose_i,P); % 10
+    end
+    if options.drawTruePoses % show ground truth
+        plot_pose3(truth.cameras{M}.pose,[]);
+        pt = pose2pt(truth.cameras{M}.pose);
+        g_pts = [g_pts; pt];
+    end
+    
+    ept = pose2pt(pose_i);
+    e_pts = [e_pts; ept];
+    
+    M = M + options.cameraInterval;
+end
+
+%% draw
+% axis([-40 40 -40 40 -10 20]);axis equal
+axis([-2 2 -1 14 -1 4]);axis equal
+view(3)
+colormap('summer');
+drawnow
+grid on;
+xlabel('x')
+ylabel('y')
+zlabel('z')
+
+hold on;
+if options.drawTruePoses
+    plot3(g_pts(:,1), g_pts(:,2), g_pts(:,3), 'Color', 'k', 'LineWidth', 2);
+end
+plot3(e_pts(:,1), e_pts(:,2), e_pts(:,3), 'Color', 'g', 'LineWidth', 2);
+
+
+end

@@ -1,10 +1,10 @@
 %%
 % Feb. 9 2018, He Zhang, hxzhang1@ualr.edu
 % plot the result of isam2
-function swing_simulation_Plot(truth, isam, result, options)
+function swing_simulation_Plot_surf(truth, isam, result, options)
 
-% h=gca;
-% cla(h);
+h=gca;
+cla(h);
 hold on;
 
 %% Plot points
@@ -49,7 +49,7 @@ end
 % axis([-40 40 -40 40 -10 20]);axis equal
 axis([-2 2 -1 14 -1 4]);axis equal
 view(3)
-% colormap('hot');
+colormap('summer');
 drawnow
 grid on;
 xlabel('x')
@@ -60,7 +60,7 @@ hold on;
 if options.drawTruePoses
     plot3(g_pts(:,1), g_pts(:,2), g_pts(:,3), 'Color', 'k', 'LineWidth', 2);
 end
-plot3(e_pts(:,1), e_pts(:,2), e_pts(:,3), 'Color', 'r', 'LineWidth', 2);
+plot3(e_pts(:,1), e_pts(:,2), e_pts(:,3), 'Color', 'g', 'LineWidth', 2);
 
 
 end
@@ -100,12 +100,12 @@ function cov_ellipse_3d(c,P)
     z = data(2*n+1:end,:)+c(3);
 
     % now plot the rotated ellipse
-    % sc = surf(x,y,z,abs(xc));
+    sc = surf(x,y,z,abs(xc));
     % sc = mesh(x, y, z, abs(xc));
     % sc = mesh(x, y, z, 'edgecolor', 'g');
-    sc = plot3(x, y, z, 'r-');
+    % sc = plot3(x, y, z, 'g-');
     shading interp
-    alpha(0.5)
+    alpha(0.3)
     axis equal
 end
 
