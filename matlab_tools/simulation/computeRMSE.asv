@@ -1,7 +1,7 @@
 %% 
 % Feb. 9 2018, He Zhang, hxzhang1@ualr.edu 
 % compute RMSE using the result from ISAM2 
-function [rmse] = computeRMSE(result, truth, options)
+function [rmse, ] = computeRMSE(result, truth, options)
 
 %% 
 import gtsam.*
@@ -19,6 +19,7 @@ while result.exists(symbol('x', M))
     rmse_i = computeRMSEArray(e_pts, g_pts); 
     if options.rmse_ratio
         dis = computeDis(g_pts); 
+        rmse_i = rmse_i/dis; 
     end
     rmse = [rmse; rmse_i];
     M = M + options.cameraInterval;
@@ -26,9 +27,12 @@ end
     
 end
 
-
-%% extract location from pose
-function pt = pose2pt(pose)
-    C = pose.translation().vector();
-    pt = [C(1), C(2), C(3)];
+%% compute the distance of the traversed route
+function dis = computeDis(pts)
+    dis = 0; 
+    for i=2:size(pts)
+        dp = pts(i, :) - pts(i-1, :);
+        dis = dis + sqrt(dp * dp');
+    end
 end
+

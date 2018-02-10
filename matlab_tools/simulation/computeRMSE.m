@@ -1,7 +1,7 @@
 %% 
 % Feb. 9 2018, He Zhang, hxzhang1@ualr.edu 
 % compute RMSE using the result from ISAM2 
-function [rmse] = computeRMSE(result, truth, options)
+function [rmse, g_pts] = computeRMSE(result, truth, options)
 
 %% 
 import gtsam.*
