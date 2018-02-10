@@ -1,7 +1,7 @@
 %% 
 % Feb. 5 2018, He Zhang, hxzhang1@ualr.edu
 % simulate swing motion 
-function [obs, pts, vfeats] = swing_simulation(tilt, H)
+function [obs, pts, vfeats] = swing_simulation_data(tilt, H)
 %% parameters 
 if nargin == 0
     H = 1.2; % camera's height installed in robocane

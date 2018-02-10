@@ -9,7 +9,11 @@ function [ data, truth, isam, result, options ] = swing_simulation_ISAM_VINS(opt
     end
     import gtsam.*
     %% Generate data
-    [data,truth, options] = swing_simulation_ISAM_data(options);
+    tilt = 30.*pi/180.;
+    H = 3; % 1.2
+    R = tiltR(tilt);
+    [obs, pts, vfeats] = swing_simulation_data_VINS(tilt, H); 
+    [data,truth, options] = swing_simulation_ISAM_data(options, obs, pts, vfeats, R);
     
     %% Initialize iSAM with the first pose and points
     options.hardConstraint = true;
@@ -25,4 +29,12 @@ for frame_i=3:options.nrCameras
     end
 end
     
+end
+
+function R = tiltR(tilt)
+    angle = -(pi/2+tilt);
+    ca = cos(angle); sa = sin(angle);
+    R = [1 0 0;
+     0 ca -sa;
+     0 sa ca;];
 end

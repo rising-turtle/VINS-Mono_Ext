@@ -24,7 +24,7 @@ while result.exists(symbol('x',M))
     ii = symbol('x',M);
     pose_i = result.at(ii);
     if M==1
-        plot_axis(pose_i, 1);
+        plot_axis(pose_i, 0.5);
     end
     
     if options.hardConstraint && (M==1)
@@ -35,7 +35,12 @@ while result.exists(symbol('x',M))
     end
     if options.drawTruePoses % show ground truth
         plot_pose3(truth.cameras{M}.pose,[]);
+        pt = pose2pt(truth.cameras{M}.pose);
+        g_pts = [g_pts; pt];
     end
+    
+    ept = pose2pt(pose_i);
+    e_pts = [e_pts; ept];
     
     M = M + options.cameraInterval;
 end
@@ -50,6 +55,13 @@ grid on;
 xlabel('x')
 ylabel('y')
 zlabel('z')
+
+hold on;
+if options.drawTruePoses
+    plot3(g_pts(:,1), g_pts(:,2), g_pts(:,3), 'Color', 'k', 'LineWidth', 2);
+end
+plot3(e_pts(:,1), e_pts(:,2), e_pts(:,3), 'Color', 'g', 'LineWidth', 2);
+
 
 end
 
@@ -89,7 +101,9 @@ function cov_ellipse_3d(c,P)
 
     % now plot the rotated ellipse
     % sc = surf(x,y,z,abs(xc));
-    sc = mesh(x, y, z, abs(xc));
+    % sc = mesh(x, y, z, abs(xc));
+    sc = mesh(x, y, z, 'edgecolor', 'g');
+    sc = plot3()
     shading interp
     alpha(0.5)
     axis equal
@@ -105,18 +119,20 @@ function plot_axis(pose, axisLength)
         % draw the camera axes
         xAxis = C+gRp(:,1)*axisLength;
         L = [C xAxis]';
-        line(L(:,1),L(:,2),L(:,3),'Color','r','LineWidth',2);
+        line(L(:,1),L(:,2),L(:,3),'Color','r','LineWidth',4);
 
         yAxis = C+gRp(:,2)*axisLength;
         L = [C yAxis]';
-        line(L(:,1),L(:,2),L(:,3),'Color','g','LineWidth',2);
+        line(L(:,1),L(:,2),L(:,3),'Color','g','LineWidth',4);
 
         zAxis = C+gRp(:,3)*axisLength;
         L = [C zAxis]';
-        line(L(:,1),L(:,2),L(:,3),'Color','b','LineWidth',2);
+        line(L(:,1),L(:,2),L(:,3),'Color','b','LineWidth',4);
     end
 end
 
 %% extract location from pose
 function pt = pose2pt(pose)
+    C = pose.translation().vector();
+    pt = [C(1), C(2), C(3)];
 end

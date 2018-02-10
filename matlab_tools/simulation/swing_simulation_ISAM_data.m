@@ -1,17 +1,7 @@
 %% 
 % Feb. 7 2018, He Zhang, hxzhang1@ualr.edu
 % generate swing motion data, and save it into GTSAM's data structure 
-function [ data, truth, options] = swing_simulation_ISAM_data(options)
-
-if nargin == 0
-    options = default_option();
-end
-
-%% generate swing motion given tilt angle and H
-tilt = 30.*pi/180.;
-H = 3; % 1.2
-R = tiltR(tilt);
-[obs, pts, vfeats] = swing_simulation(tilt, H); 
+function [ data, truth, options] = swing_simulation_ISAM_data(options, obs, pts, vfeats, R)
 
 %% generate simulated data 
 import gtsam.*
@@ -71,11 +61,4 @@ end
 
 end
 
-function R = tiltR(tilt)
-    angle = -(pi/2+tilt);
-    ca = cos(angle); sa = sin(angle);
-    R = [1 0 0;
-     0 ca -sa;
-     0 sa ca;];
-end
 

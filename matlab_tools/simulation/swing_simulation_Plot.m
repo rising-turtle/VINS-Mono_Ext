@@ -102,7 +102,8 @@ function cov_ellipse_3d(c,P)
     % now plot the rotated ellipse
     % sc = surf(x,y,z,abs(xc));
     % sc = mesh(x, y, z, abs(xc));
-    sc = mesh(x, y, z, 'edgecolor', 'g');
+    % sc = mesh(x, y, z, 'edgecolor', 'g');
+    sc = plot3(x, y, z, 'g-');
     shading interp
     alpha(0.5)
     axis equal
