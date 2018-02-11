@@ -9,6 +9,8 @@ end
 
 load(fmat_name);
 
+%% plot rmse 
+
 
 
 

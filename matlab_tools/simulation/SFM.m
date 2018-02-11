@@ -42,11 +42,14 @@ function [ data, truth, result, options ] = SFM(data,truth, options)
     initialEstimate.insert(symbol('x',1), pre_pose); 
     for i=2:size(truth.cameras,2)
         odometry = data.odometry{i-1};
+        %% add noise 
+        odometry = odometry.retract([g_param.odo_R_std * randn(3,1); g_param.odo_t_std*randn(3,1)]);
         pose_i = pre_pose.compose(odometry); 
         initialEstimate.insert(symbol('x',i), pose_i);
         pre_pose = pose_i;
     end
     for j=1:size(truth.points,2)
+        %% add noise 
         point_j = truth.points{j}.retract(g_param.pt_std*randn(3,1));
         if truth.point_i_obs{j} >= 2
             initialEstimate.insert(symbol('p',j), point_j);

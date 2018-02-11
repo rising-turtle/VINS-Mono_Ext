@@ -2,7 +2,7 @@
 % Feb. 9 2018, He Zhang, hxzhang1@ualr.edu
 % main swing simulation using ISAM2 
 
-M = 2;
+M = 500;
 T1 = {};
 g_pts = [];
 for i=1:M
