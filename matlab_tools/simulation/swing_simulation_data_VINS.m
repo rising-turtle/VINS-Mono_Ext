@@ -19,7 +19,7 @@ z = 0;
 vfeats = createFeatureHorizontal(x, y, z); % create a number of features on a plane
 
 %% generate trajectory 
-px = [-0.7:g_param.pose_step:0.7]; 
+px = [-g_param.x_range:g_param.pose_step:g_param.x_range]; 
 n_swing = g_param.swing_times; % 7; 
 pts = createTrajectory(px, H, n_swing); % create trajectory swing motion 
 

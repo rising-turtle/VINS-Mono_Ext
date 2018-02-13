@@ -19,7 +19,7 @@ g_param.x_range = 1.0;
 
 g_param.iterate_num = 10;
 
-g_param.diverge_lambda = 100000; % if diverge, lambda = diverge_lambda
-g_param.diverge_error = 200000; % if diverge, err > diverge_error
+g_param.diverge_lambda = 100000; % if div
+g_param.diverge_error = 200000; % if coverge, err < diverge_error
 
 

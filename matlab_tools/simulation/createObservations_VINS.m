@@ -50,26 +50,28 @@ for i=1:size(pts,1)
         if good == 1
             obs_ij = [];
             o.pt = gpt;
-            o.id = feats(j).id; 
-            cur_obs = [cur_obs; o];
+ 
             %% check whether this point has been seen in previous pts
             feat_id = in_pre_obs(gpt, pre_obs);
             if feat_id >= 0 % observed in pre_obs
                 obs_ij = generate_obs_new(gpt, fpt, i, feat_id, px, py);
+                o.id = feat_id; 
             else % new detected feature
                 %% check whether need to create new feature point
                 if cnt(feats(j).id) == 0 % use predefined point is ok
                     cnt(feats(j).id) = cnt(feats(j).id) + 1;
                     obs_ij = generate_obs_new(gpt, fpt, i, feats(j).id, px, py);
+                    o.id = feats(j).id; 
                 else % need to create new feature
                     feat.x = gpt(1); feat.y = gpt(2); feat.z = gpt(3);
                     feat.id = next_feat_id; 
                     obs_ij = generate_obs_new(gpt, fpt, i, feat.id, px, py);
+                    o.id = feat.id; 
                     next_feat_id = next_feat_id + 1;
                     feats = [feats; feat];
-                end
-                
+                end    
             end
+            cur_obs = [cur_obs; o];
             % obs_ij = generate_obs(feats(j), i, fpt, px, py);
             s_obi.obs = [s_obi.obs; obs_ij];
         end

@@ -34,7 +34,10 @@ for i=1:length(pts)
         obs_ij = obs_i.obs(j);
         % data.Z{i}{j} = Point2(obs_ij.obs_x, obs_ij.obs_y);
         % data.Z{i}{j} = truth.cameras{i}.project(truth.points{truth.point_id{obs_ij.feat_id}});
+        gpt = Point3(obs_ij.gpt');
+        lpt = pose.transform_to(gpt); % from world to local
         data.Z{i}{j} = truth.cameras{i}.project(Point3(obs_ij.gpt'));
+        data.D{i}{j} = lpt.z; % depth 
         data.J{i}{j} = obs_ij.feat_id;
         truth.point_i_obs{obs_ij.feat_id} = truth.point_i_obs{obs_ij.feat_id} + 1;
     end

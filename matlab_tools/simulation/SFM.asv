@@ -1,6 +1,6 @@
 %%
 % Feb. 10 2018, SFM 
-function [ data, truth, result, options, converge ] = SFM(data,truth, options)
+function [ data, truth, result, options ] = SFM(data,truth, options)
     
     %% noise parameters
     param_global;
@@ -20,9 +20,7 @@ function [ data, truth, result, options, converge ] = SFM(data,truth, options)
         for k=1:length(data.Z{i})
             j = data.J{i}{k};
             if truth.point_i_obs{j} >= 2
-                % add noise 
-                zij = data.Z{i}{k}.retract(g_param.pix_std*randn(2,1));
-                graph.add(GenericProjectionFactorCal3_S2(zij, measurementNoise, symbol('x',i), symbol('p',j), data.K));
+                graph.add(GenericProjectionFactorCal3_S2(data.Z{i}{k}, measurementNoise, symbol('x',i), symbol('p',j), data.K));
                 if first_j == -1
                     first_j = j;
                 end
@@ -64,19 +62,14 @@ function [ data, truth, result, options, converge ] = SFM(data,truth, options)
 %            % fprintf('feature %d has not been observed!\n', j);
 %         end
 %     end
-    cam = get_rs_r200;
     for i=1:size(truth.cameras,2)
         pose = initialEstimate.at(symbol('x',i));
         for k=1:length(data.Z{i})
             j = data.J{i}{k};
             if truth.point_i_obs{j} >= 2
-                if ~initialEstimate.exists(symbol('p', j))
-                    point_j_local = reproject(cam, data.Z{i}{k}, data.D{i}{k});
-                    %% add noise 
-                    point_j_local = point_j_local.retract(g_param.pt_std*randn(3,1));
-                    point_j_global = pose.transform_from(point_j_local); % from local to world
-                    % pt_j_global = truth.cameras{i}.backproject(data.Z{i}{k}, data.D{i}{k});
-                    initialEstimate.insert(symbol('p', j), point_j_global);
+                if ~initialEstimate.exist(symbol('p', j))
+                    
+                    point_j = reproject(pose, )
                 end
             end
         end
@@ -86,24 +79,11 @@ function [ data, truth, result, options, converge ] = SFM(data,truth, options)
     %% Fine grain optimization, allowing user to iterate step by step
     parameters = LevenbergMarquardtParams;
     parameters.setlambdaInitial(1.0);
-    parameters.setVerbosityLM('trylambda');
+    % parameters.setVerbosityLM('trylambda');
 
     optimizer = LevenbergMarquardtOptimizer(graph, initialEstimate, parameters);
     for i=1:g_param.iterate_num
         optimizer.iterate();
     end
     result = optimizer.values();
-    converge = true;
-    if optimizer.lambda == g_param.diverge_lambda
-        converge = false;
-    end
-end
-
-function pt3 = reproject(cam, pt, d)
-       % px = cam.cx + cam.fx * pt(1)/pt(3);
-       % py = cam.cy + cam.fy * pt(2)/pt(3);
-       import gtsam.*
-       px = (pt.x - cam.cx)/cam.fx;
-       py = (pt.y - cam.cy)/cam.fy;
-       pt3 = Point3([px*d, py*d, d]');
 end

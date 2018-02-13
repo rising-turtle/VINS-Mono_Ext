@@ -11,9 +11,8 @@ function pts = createTrajectory(x, z, n)
     swing_angle = g_param.swing_angle * pi / 180.; 
     pts = [];
     sx = x(end) - x(1); % length of x range
-    AB = sx / cos(swing_angle); % -2*y1;
-    r = (AB/sin(swing_angle))/2.;
-    y1 = -(r - AB*sin(swing_angle)); %-sx / sqrt(3); 
+    r = sx / cos(swing_angle); % -2*y1;
+    y1 = -(r %-sx / sqrt(3); 
     inc_y = 0;
     cnt = 0;
     for k=1:n
@@ -45,7 +44,7 @@ function pts = createTrajectory(x, z, n)
     end
     
     %% delete pose that are too close
-    pts = deleteNearPt(pts, 0.1);
+    pts = deleteNearPt(pts, 0.02);
  
     %% show it
     % plot_it(pts);
@@ -61,7 +60,7 @@ function r_pts = deleteNearPt(pts, thre)
         p1 = pts(i-1,:);
         p2 = pts(i,:);
         dp = p2 - p1;
-        norm = sqrt(dp*dp');
+        norm = dp*dp';
         if norm >= thre
             r_pts = [r_pts; p2];
         end
