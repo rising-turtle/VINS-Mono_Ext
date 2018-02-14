@@ -86,7 +86,7 @@ function [ data, truth, result, options, converge ] = SFM(data,truth, options)
     %% Fine grain optimization, allowing user to iterate step by step
     parameters = LevenbergMarquardtParams;
     parameters.setlambdaInitial(1.0);
-    parameters.setVerbosityLM('trylambda');
+    % parameters.setVerbosityLM('trylambda');
 
     optimizer = LevenbergMarquardtOptimizer(graph, initialEstimate, parameters);
     for i=1:g_param.iterate_num

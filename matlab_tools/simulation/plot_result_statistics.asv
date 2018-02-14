@@ -71,11 +71,7 @@ function plot_rmse_ratio(mu1, mu2, g_pts, sigma_err1, sigma_err2)
         r1 = computeRMSEArray(mu1(1:i,:), g_pts(1:i, :));
         r2 = computeRMSEArray(mu2(1:i,:), g_pts(1:i, :));
         dp = g_pts(i,:) - g_pts(i-k,:);
-        dlen =  sqrt(dp*dp');
-        len = len + dlen;
-        if dlen < 0.5
-            continue;
-        end
+        len = len + sqrt(dp*dp');
         tlen = [tlen; len];
         rmse1 = [rmse1; r1];
         rmse2 = [rmse2; r2];
@@ -93,7 +89,7 @@ function plot_rmse_ratio(mu1, mu2, g_pts, sigma_err1, sigma_err2)
     shift_len = tlen - 0.1;
     errorbar(shift_len, rmse2, ratio_err2, 's', 'MarkerFaceColor', 'red');
     legend('Proposed', 'VINS-Mono');
-    xlim([0 18]);
+    
 end
 
 %% plot rmse

@@ -4,7 +4,7 @@
 
 add_path;
 
-M = 100;
+M = 500;
 T1 = {};
 g_pts = [];
 
@@ -19,12 +19,12 @@ while i<=M
         fprintf('run i = %d for M = %d\n', i, M);
         i = i + 1;
     else
-        plot_trajectory_and_gt(epts, g_pts, 'g');
+        % plot_trajectory_and_gt(epts, g_pts, 'g');
         fprintf('fail to converge at i = %d\n', i);
     end
 end
 %
-[mu1, sigma1] = computeMeanSigma(T1);
+[mu1, sigma1, sigma_err1] = computeMeanSigma(T1, g_pts);
 
 T2 = {};
 i = 1;
@@ -38,18 +38,18 @@ while i<=M
         fprintf('run i = %d for M = %d \n', i, M);
         i = i + 1;
     else
-        plot_trajectory_and_gt(epts, g_pts1, 'r');
+        % plot_trajectory_and_gt(epts, g_pts1, 'r');
         fprintf('fail to converge at i = %d\n', i);
     end
 end
 
-[mu2, sigma2] = computeMeanSigma(T2); 
+[mu2, sigma2, sigma_err2] = computeMeanSigma(T2, g_pts); 
 
 fmat = 'mu_sigma.mat';
-save(fmat, 'mu1', 'sigma1', 'mu2', 'sigma2', 'g_pts');
+save(fmat, 'mu1', 'sigma1', 'sigma_err1', 'mu2', 'sigma2', 'sigma_err2', 'g_pts');
 fprintf('succeed to compute and save mean, sigma and ground truth\n');
 
-plot_result_statistics();
+% plot_result_statistics();
 
 
 
