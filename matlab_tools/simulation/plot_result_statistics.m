@@ -16,13 +16,15 @@ load(fmat_name);
 plot_rmse_ratio(mu1, mu2, g_pts, sigma_err1, sigma_err2);
 
 %% plot trajectory 
-% plot_trajectory(mu1, sigma1, mu2, sigma2, g_pts); 
+plot_trajectory(mu1, sigma1, mu2, sigma2, g_pts); 
 
 end
 
 %% plot trajectory 
 function plot_trajectory(mu1, sigma1, mu2, sigma2, g_pts)
-figure; 
+figure;
+
+% ground truth 
 plot3(g_pts(:,1), g_pts(:,2), g_pts(:,3), 'Color', 'k', 'LineWidth', 2, 'Marker', '*'); % plot ground truth 
 hold on; 
 
@@ -30,22 +32,29 @@ hold on;
 %% Generate data
 tilt = 30.*pi/180.;
 R = tiltR(tilt);
-    
+ 
+% Proposed 
+plot3(mu1(:,1), mu1(:,2), mu1(:,3), 'Color', 'g', 'LineWidth', 2, 'Marker', 's');
+% VINS-Mono
+plot3(mu2(:,1), mu2(:,2), mu2(:,3), 'Color', 'r', 'LineWidth', 2, 'Marker', '+');
+  
+legend('Ground Truth', 'Proposed', 'VINS-Mono');
+ 
 %% plot mu1 sigma1
  for i = 2:size(mu1,1)
      P = sigma1{i};
      gPp = R*P*R';
-     cov_ellipse_3d(mu1(i,:), gPp, 'g-');
+     cov_ellipse_3d(mu1(i,:), gPp, 'g');
  end
- plot3(mu1(:,1), mu1(:,2), mu1(:,3), 'Color', 'g', 'LineWidth', 2, 'Marker', 's');
+
 
  %% plot mu2 sigma2
  for i = 2:size(mu2,1)
      P = sigma2{i};
      gPp = R*P*R';
-     cov_ellipse_3d(mu2(i,:), gPp, 'r-');
+     cov_ellipse_3d(mu2(i,:), gPp, 'r');
  end
- plot3(mu2(:,1), mu2(:,2), mu2(:,3), 'Color', 'r', 'LineWidth', 2, 'Marker', '+');
+
  
 axis([-2 2 -1 14 -1 4]);axis equal
 view(3)
@@ -143,8 +152,8 @@ function cov_ellipse_3d(c,P, style)
     % now plot the rotated ellipse
     % sc = surf(x,y,z,abs(xc));
     % sc = mesh(x, y, z, abs(xc));
-    % sc = mesh(x, y, z, 'edgecolor', 'g');
-    sc = plot3(x, y, z, style(:));
+    % sc = mesh(x, y, z, 'edgecolor', style(:));
+    sc = plot3(x, y, z, style(:), 'LineWidth', 2);
     shading interp
     alpha(0.5)
     axis equal
