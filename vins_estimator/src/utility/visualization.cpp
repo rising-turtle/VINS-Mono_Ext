@@ -273,6 +273,7 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header, E
     margin_cloud.header = header;
     loop_margin_cloud.header = header;
 
+    // static ofstream ouf("vins_mono_ext_feature_pts.log");
     // cnt = 0;
     for (auto &it_per_id : estimator.f_manager.feature)
     { 
@@ -297,6 +298,7 @@ void pubPointCloud(const Estimator &estimator, const std_msgs::Header &header, E
             p.z = w_pts_i(2);
             margin_cloud.points.push_back(p);
 	     // ++cnt;
+	     // ouf << p.x <<" "<<p.y<<" "<<p.z<<endl;
         }
     }
     pub_margin_cloud.publish(margin_cloud);
