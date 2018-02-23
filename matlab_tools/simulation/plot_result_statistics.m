@@ -44,7 +44,7 @@ legend('Ground Truth', 'Proposed', 'VINS-Mono');
  for i = 2:size(mu1,1)
      P = sigma1{i};
      gPp = R*P*R';
-     cov_ellipse_3d(mu1(i,:), gPp, 'g');
+     % cov_ellipse_3d(mu1(i,:), gPp, 'g');
  end
 
 
@@ -52,7 +52,7 @@ legend('Ground Truth', 'Proposed', 'VINS-Mono');
  for i = 2:size(mu2,1)
      P = sigma2{i};
      gPp = R*P*R';
-     cov_ellipse_3d(mu2(i,:), gPp, 'r');
+     % cov_ellipse_3d(mu2(i,:), gPp, 'r');
  end
 
  
@@ -61,9 +61,11 @@ view(3)
 % colormap('hot');
 drawnow
 grid on;
+hold on;
 xlabel('x')
 ylabel('y')
 zlabel('z')
+zlim([0 1]);
 
 end
 
