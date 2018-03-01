@@ -1,7 +1,9 @@
 # Extend VINS-Mono by adding Local Loops
-At first, detect freak feature to match between keyframes, as implemted in **findMatchByPnP()** in **freak_tracker.cpp**. But extract freak consumes about 100ms, and yet results in few improvement compared to good feature.
-Then, match good features between keyframes produce expected improvement. Details exist in **findMatchByTracked()** in **freak_tracker.cpp**. 
-To cope with the new feature tracking strategy, corresponding changes are made in codes under vins_estimator folder, especially **estimator.cpp** and **feature_manager.cpp**.
+1.1 At first, detect freak feature to match between keyframes, as implemted in **findMatchByPnP()** in **freak_tracker.cpp**. But extract freak consumes about 100ms, and yet results in few improvement compared to good feature.
+
+1.2 Then, match good features between keyframes produce expected improvement. Details exist in **findMatchByTracked()** in **freak_tracker.cpp**. 
+
+1.3 To cope with the new feature tracking strategy, corresponding changes are made in codes under vins_estimator folder, especially **estimator.cpp** and **feature_manager.cpp**.
 
 To run it, execuate launch files in launch folder. The main one is **vins_local_kf.launch**.
 
