@@ -11,13 +11,18 @@ if nargin == 0
     fdir = './VINS-Mono/ETAS_4F_640_30';
     fdir = './VINS-Mono/ETAS_F2_640_30'; 
     fdir = './VINS-Mono/ETAS_F4_640_30';
+    fdir = './vslam_okvis/ETAS_2F_640_30';
+    fdir = './vslam_okvis/ETAS_4F_640_30';
+    fdir = './vslam_okvis/ETAS_F2_640_30';
+    fdir = './vslam_okvis/ETAS_F4_640_30';
 end
 
 ev = []
 
 for i=1:10
     fname = strcat('/run_',int2str(i));
-    fname = strcat(fname, '.csv');
+     %fname = strcat(fname, '.csv');
+    fname = strcat(fname, '.log');
     fname = strcat(fdir, fname);
     fid = fopen(fname);
     col = textscan(fid, '%s', 'delimiter', '\n');
