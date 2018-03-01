@@ -1,0 +1,20 @@
+<launch>
+    <arg name="vins_folder" default = "/home/davidz/work/ros/indigo/src/VINS-Mono_Ext"/>
+    <arg name="config_path" default = "$(arg vins_folder)/config/robocane_config.yaml" />
+    <arg name="vins_path" default = "$(arg vins_folder)/" />
+    
+   <include file="vins_rviz_ext_compare.launch"/>
+
+    <node pkg="feature_tracker_ext" type="freak_tracker" name="freak_tracker" output="screen">
+        <param name="config_file" type="string" value="$(arg config_path)" />
+        <param name="vins_folder" type="string" value="$(arg vins_path)" />
+	<remap from="/freak_tracker/feature_img" to="/feature_tracker_ext/feature_img"/>
+    </node>
+
+    <node name="vins_estimator_ext" pkg="vins_estimator_ext" type="vins_estimator_ext" output="screen">
+       <remap from="/feature_tracker_ext/feature" to="/freak_tracker/feature"/>
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <param name="vins_folder" type="string" value="$(arg vins_path)" />
+    </node>
+
+</launch>
