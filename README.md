@@ -1,18 +1,18 @@
 # Extend VINS-Mono by adding Local Loops
-1.1 At first, detect freak feature to match between keyframes, as implemted in **findMatchByPnP()** in **freak_tracker.cpp**. But extract freak consumes about 100ms, and yet results in few improvement compared to good feature.
+1.1 At first, try to detect and match freak feature between keyframes, as implemted in **findMatchByPnP()** in **freak_tracker.cpp**. But extract freak consumes about 100ms, and results in few improvement compared to "good feature".
 
-1.2 Then, match good features between keyframes produce expected improvement. Details exist in **findMatchByTracked()** in **freak_tracker.cpp**. 
+1.2 Then, instead, matching "good features" between keyframes results in improvement. Details can be found in **findMatchByTracked()** in **freak_tracker.cpp**. 
 
-1.3 To cope with the new feature tracking strategy, corresponding changes are made in codes under vins_estimator folder, especially **estimator.cpp** and **feature_manager.cpp**.
+1.3 To cope with the new strategy to track features, corresponding changes are made in codes under vins_estimator folder, especially **estimator.cpp** and **feature_manager.cpp**.
 
-To run it, execuate launch files in launch folder. The main one is **vins_local_kf.launch**.
+To test it, run launch files in launch folder. The main one is **vins_local_kf.launch**.
 
 # sync_time
-Synchronize the timestamps of IMU's and camera's sequence. It uses an iterative search strategy similar to climb-hill, to align the two data sequences. 
+Synchronize the timestamps of IMU's and camera's sequence. Similar to climb-hill, it iteratively search time shift to align the two data sequences. If the time shift is right, the initialization's result for extrinsic calibration will be close to that manually measured.  
 
 # matlab_tools
 ## simulation
-Simulates the CRC (Co-Robotic Cane-a Robotic Navigation Aid for blind people) swing movement, to show the improved accuracy by adding local loops. It runs in gtsam framework, both ISAM and batch based optimization are realized. The main entrance file is **main_swing_simulation_statistics.m**. More tunable file is **main_swing_simulation.m**
+Simulates the CRC (Co-Robotic Cane-a Robotic Navigation Aid for blind people) swing movement, to show that adding local loopsthe can improve accuracy. It runs in gtsam framework, both incremental optimaition (ISAM2) and batch based optimization (SFM) are realized. The main entrance file is **main_swing_simulation_statistics.m** and **main_swing_simulation.m**.
 
 ## result_comp
 It census the results from OKVIS, VINS-Mono and VINS-Mono_Ext, including mean, std, min, max. 
