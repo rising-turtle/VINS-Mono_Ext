@@ -38,6 +38,12 @@ add_executable(feature_tracker_ext
 
 target_link_libraries(feature_tracker_ext ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(feature_tracker_ext_bag
+    src/feature_tracker_node_bag.cpp
+    src/parameters.cpp
+    src/feature_tracker.cpp)
+
+target_link_libraries(feature_tracker_ext_bag ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
 # New freak node 
 add_subdirectory(freak)
