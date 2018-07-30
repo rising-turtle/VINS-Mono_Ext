@@ -18,12 +18,14 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
+# set(Ceres_DIR "/home/davidz/work/3rdlibs/okvis/build/share/Ceres")
 find_package(Ceres REQUIRED)
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-find_package(Eigen3  REQUIRED)
+# find_package(Eigen3  REQUIRED)
+include_directories("/usr/include/eigen3")
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
