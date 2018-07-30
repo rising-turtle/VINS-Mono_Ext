@@ -71,8 +71,8 @@ int main(int argc, char **argv)
     if(useBag)
     {
 	ROS_WARN("freak_node: use bag file %s", g_bagf.c_str());
-	setParam<std::string>(n, "config_file", string("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/config/robocane_config.yaml"));
-	setParam<std::string>(n, "vins_folder", string("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/result")); 
+	// setParam<std::string>(n, "config_file", string("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/config/robocane_config.yaml"));
+	// setParam<std::string>(n, "vins_folder", string("/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/result")); 
     }
     readParameters(n);
 
@@ -86,9 +86,10 @@ int main(int argc, char **argv)
     if(useBag)
     {
 	ROS_WARN("freak_node: succeed to open bagfile %s read from bag!", g_bagf.c_str()); 
-	ROS_INFO("freak_node: wait for start!");
-	cin.ignore();
-	cin.get();
+	// ROS_INFO("freak_node: wait for start!");
+	// cin.ignore();
+	// cin.get();
+	ROS_INFO("freak_node: start to process bagfile!");
 	readBagData(bag, fe); 
     }
     else{
@@ -332,9 +333,17 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
     ros::NodeHandle n;
     ros::Publisher imu_pub = n.advertise<sensor_msgs::Imu>("/imu0", 1000); 
     ros::Publisher img_pub = n.advertise<sensor_msgs::Image>("/cam0/color", 1000); 
+    int imu_msg_cnt = 0;
+    int img_msg_cnt = 0; 
+    ROS_WARN("IMU_TOPIC = %s IMAGE_TOPIC = %s", IMU_TOPIC.c_str(), IMAGE_TOPIC.c_str()); 
     // ROS_WARN("IMU_TOPIC = %s", IMU_TOPIC.c_str());
     BOOST_FOREACH(rosbag::MessageInstance const m, view)
     {
+	if(!ros::ok())
+	{
+	    ROS_INFO("freak_node.cpp: quit!");
+	    break; 
+	}
 	if(m.getTopic() == IMAGE_TOPIC)
 	{
 	    // publish image 
@@ -361,6 +370,7 @@ void readBagData(rosbag::Bag& bag, CFrontend& fe)
 	}
 	if(m.getTopic() == IMU_TOPIC || ("/"+m.getTopic()) == IMU_TOPIC)
 	{
+	    // ROS_INFO("OK publish %d IMU_MSG!", imu_msg_cnt++);
 	    // publish imu 
 	    imu_pub.publish(m); 
 	    ros::spinOnce(); 

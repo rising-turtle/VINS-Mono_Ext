@@ -4,7 +4,7 @@
 #
 # TODO: change these topics 
 imu_topic: "/imu0"
-image_topic: "/cam0/color" # "/cam0/image_raw"
+image_topic: "/cam0/image_raw" # "/cam0/color" "/cam0/image_raw"
 output_path: "vins_result.csv"         # vins outputs will be wrttento vins_folder_path + output_path
 
 #camera calibration 
@@ -13,19 +13,20 @@ camera_name: camera
 image_width: 512
 image_height: 512
 distortion_parameters:
-   k1: 0.
-   k2: 0.
-   p1: 0.
-   p2: 0.
+   k1: -0.239552  # -0.2847798
+   k2: 0.037056  # 0.08245052
+   p1: 3.5763956e-6 # -1.0946156e-6
+   p2: -1.4032145e-5 # 4.78701072e-6
+   # k3: -0.0104085
 projection_parameters: 
   #  615.426, 625.456, 318.837, 240.594
-   fx: 615.426
-   fy: 625.456
-   cx: 318.837
-   cy: 240.594
+   fx: 190.9785
+   fy: 190.9733
+   cx: 254.9317
+   cy: 256.8974
 
 # Extrinsic parameter between IMU and Camera.
-estimate_extrinsic: 1 #1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+estimate_extrinsic:    1 #1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
                         # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
                         # 2  Don't know anything about extrinsic parameters. You don't need to give R,T. We will try to calibrate it. Do some rotation movement at beginning. 
 ex_calib_result_path: "ex_calib_result.yaml"  # If you choose 1 or 2, the extrinsic calibration result will be written vins_folder_path + ex_calib_result_path.                        
