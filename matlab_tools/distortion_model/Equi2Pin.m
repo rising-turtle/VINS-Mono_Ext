@@ -1,5 +1,15 @@
 function [ k1, k2, p1, p2, k3, err ] = Equi2Pin( imageSize, D, K )
 
+if nargin == 0
+    %% camera intrinsic parameters in TUM vio's dataset 
+    imageSize = [512 512]; 
+    D = [0.0034823894022493434, 0.0007150348452162257, -0.0020532361418706202, 0.00020293673591811182];
+    % pinhole-equi-512
+    intri = [190.97847715128717, 190.9733070521226, 254.93170605935475, 256.8974428996504];
+    K = [intri(1) 0 intri(3)
+        0 intri(2) intri(4)
+        0 0 1];
+end
 %split up K and D into parameters of interest
 fx = K(1,1);
 fy = K(2,2);
@@ -58,6 +68,3 @@ function [ err ] = getPinErr( u, v, x, y, D)
     err = mean((u-u_pin).^2 + (v-v_pin).^2);
     
 end
-    
-
-
