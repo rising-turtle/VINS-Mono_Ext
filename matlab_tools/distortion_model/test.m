@@ -18,6 +18,13 @@ imwrite(unImg, 'equi-out.png');
 % pinhole-radtan-512
 D = [-0.284779809132009,0.0824505247648799, -1.09461560717260e-06,  ...
     4.78701071508643e-06,-0.0104084647110111];
-unImg2 = Undistort(imageD, D, K, 'radtan');
-imshow(unImg2);
-imwrite(unImg2, 'radtan-out.png');
+unImg = Undistort(imageD, D, K, 'radtan');
+imshow(unImg);
+imwrite(unImg, 'radtan-out.png');
+
+% pinhole-radtan-512
+D = [-0.239552085066865,0.037056076630330, 3.576395603190594e-06,  ...
+    -1.403214455830240e-05,0];
+unImg = Undistort(imageD, D, K, 'radtan');
+imshow(unImg);
+imwrite(unImg, 'radtan-out_4.png');
