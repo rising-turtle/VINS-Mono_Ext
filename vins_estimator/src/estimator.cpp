@@ -793,6 +793,7 @@ void Estimator::optimization()
             // Vector3d pts_j = it_per_frame.point;
             Vector3d pts_j = it_per_id.feature_per_frame[i].point;
             ProjectionFactor *f = new ProjectionFactor(pts_i, pts_j);
+	    // ROS_INFO("cost_function block size: %d", f->parameter_block_sizes().size()); 
             problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index]);
             // WeightProjectionFactor * f = new WeightProjectionFactor(pts_i, pts_j, (double)(it_per_id.feature_per_frame.size())); 
 	     // problem.AddResidualBlock(f, loss_function, para_Pose[imu_i], para_Pose[imu_j], para_Ex_Pose[0], para_Feature[feature_index]);

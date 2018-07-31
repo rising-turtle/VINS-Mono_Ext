@@ -70,7 +70,8 @@ void test()
     Eigen::Vector3d noise(0.01, 0.02, -0.01); 
     pts_j = (pts_cam_j/dep_j); 
     pts_j += noise; 
-    // ProjectionFactor * f = new ProjectionFactor(pts_i, pts_j); 
+    ProjectionFactor * f1 = new ProjectionFactor(pts_i, pts_j); 
+    cout <<"f1->size: "<<f1->parameter_block_sizes().size()<<endl; 
     // ProjectionFactor::sqrt_info.setIdentity();
     WeightProjectionFactor * f = new WeightProjectionFactor(pts_i, pts_j, count); 
     WeightProjectionFactor::sqrt_info.setIdentity(); 

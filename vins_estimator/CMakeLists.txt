@@ -18,7 +18,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
-# set(Ceres_DIR "/home/davidz/work/3rdlibs/okvis/build/share/Ceres")
+set(Ceres_DIR "/home/davidz/work/3rdlibs/okvis/build/share/Ceres")
 find_package(Ceres REQUIRED)
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})
