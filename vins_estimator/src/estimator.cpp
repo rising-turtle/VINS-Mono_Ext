@@ -678,8 +678,8 @@ bool Estimator::failureDetection()
 {
     if (f_manager.last_track_num < 2)
     {
-        ROS_INFO(" little feature %d", f_manager.last_track_num);
-        return true;
+        ROS_WARN(" little feature %d", f_manager.last_track_num);
+        // return true;
     }
     if (Bas[WINDOW_SIZE].norm() > 2.5)
     {

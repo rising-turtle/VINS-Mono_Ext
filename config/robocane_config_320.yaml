@@ -4,27 +4,25 @@
 #
 # TODO: change these topics 
 imu_topic: "/imu0"
-image_topic: "/cam0/image_raw" # "/cam0/color" "/cam0/image_raw"
+image_topic: "/cam0/color" # "/cam0/image_raw"
 output_path: "vins_result.csv"         # vins outputs will be wrttento vins_folder_path + output_path
 
 #camera calibration 
 model_type: PINHOLE
 camera_name: camera
-image_width: 512
-image_height: 512
+image_width: 320 # 640
+image_height: 240 # 480
 distortion_parameters:
-   k1: -0.2847798 # -0.239552  # -0.2847798
-   k2: 0.08245052 # 0.037056  # 0.08245052
-   p1: -1.0946156e-6 # 3.5763956e-6 # -1.0946156e-6
-   p2: 4.78701072e-6 # -1.4032145e-5 # 4.78701072e-6
-   k3: -0.0104085
-
+   k1: 0.
+   k2: 0.
+   p1: 0.
+   p2: 0.
 projection_parameters: 
   #  615.426, 625.456, 318.837, 240.594
-   fx: 190.9785
-   fy: 190.9733
-   cx: 254.9317
-   cy: 256.8974
+   fx: 307.713 # 615.426
+   fy: 312.728 # 625.456
+   cx: 159.4185 # 318.837
+   cy: 120.297 # 240.594
 
 # Extrinsic parameter between IMU and Camera.
 estimate_extrinsic: 1 #1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
@@ -37,22 +35,22 @@ extrinsicRotation: !!opencv-matrix
    rows: 3
    cols: 3
    dt: d
-   data: [-0.99953071, 0.00744168, -0.02971511, 
-           0.0294408, -0.3459565, -0.99896766, 
-           -0.00846201, -0.99937369, 0.03436032]
+   data: [1, 0, 0, 
+           0, 1, 0, 
+           0, 0, 1]
 #Translation from camera frame to imu frame, imu^T_cam
 extrinsicTranslation: !!opencv-matrix
    rows: 3
    cols: 1
    dt: d
    # data: [-0.02,-0.06, 0.01]
-   data: [0.04536566, -0.071996, -0.04478181]
+   data: [0.063, -0.001, 0.018]
 
 #feature traker paprameters
-max_cnt: 150  # 150          # max feature number in feature tracking
-min_dist: 20 # 30  # 30          # min distance between two features 
-freq: 10 # 10                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequence will be same as raw image 
-F_threshold: 4.0 # 3.0 # 2.0 1.0        # ransac threshold (pixel)
+max_cnt: 150            # max feature number in feature tracking
+min_dist: 30            # min distance between two features 
+freq: 30 # 10                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequence will be same as raw image 
+F_threshold: 3.0 # 2.0 1.0        # ransac threshold (pixel)
 show_track: 1           # publish tracking image as topic
 equalize: 1             # 1 if image is too dark or light, trun on equalize to find enough features
 fisheye: 0              # if using fisheye, trun on it. A circle mask will be loaded to remove edge noisy points
@@ -64,11 +62,11 @@ keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
 
 #imu parameters       The more accurate parameters you provide, the better performance
 # TODO: figure out these parameters
-acc_n: 0.07           # accelerometer measurement noise standard deviation. #0.001372
-gyr_n: 0.004          # gyroscope measurement noise standard deviation.
-acc_w: 0.00172 # 0.000277          # accelerometer bias random work noise standard deviation. 
-gyr_w: 0.000044 # 0.00003428        # gyroscope bias random work noise standard deviation.     #0.000003428
-g_norm: 9.80766     # gravity magnitude
+acc_n: 0.014           # accelerometer measurement noise standard deviation. #0.001372
+gyr_n: 0.0006          # gyroscope measurement noise standard deviation.     #0.000061087
+acc_w: 0.000277          # accelerometer bias random work noise standard deviation.  #0.000027719
+gyr_w: 0.00003428        # gyroscope bias random work noise standard deviation.     #0.000003428
+g_norm: 9.81007     # gravity magnitude
 
 
 #loop closure parameters
