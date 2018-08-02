@@ -262,6 +262,11 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints()
         Eigen::Vector3d b;
         m_camera->liftProjective(a, b);
         un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
+	 if(un_pts[un_pts.size()-1].x != un_pts[un_pts.size()-1].x )
+	 {
+		// cout <<"last pt: "<<un_pts[un_pts.size()-1].x<<" , "<<un_pts[un_pts.size()-1].y<<endl; 
+		// cout <<"a = "<< a<<endl<<" b = "<<b<<endl;
+	 }
     }
 
     return un_pts;

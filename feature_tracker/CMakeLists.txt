@@ -58,4 +58,6 @@ add_executable(freak_tracker
     )
 target_link_libraries(freak_tracker freak ${catkin_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(test_cam_model src/test_cam_model.cpp)
+target_link_libraries(test_cam_model ${catkin_LIBRARIES})
 

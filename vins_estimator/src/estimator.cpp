@@ -780,6 +780,11 @@ void Estimator::optimization()
         int imu_i = it_per_id.start_frame, imu_j = imu_i - 1;
         
         Vector3d pts_i = it_per_id.feature_per_frame[0].point;
+	  if(pts_i(0) != pts_i(0))
+	  {
+		cout <<" pts_i: "<<endl<<pts_i<<endl;
+		cout <<" pts_i: has "<<it_per_id.feature_per_frame.size()<<" co observations!"<<endl;
+	  }
 
         // for (auto &it_per_frame : it_per_id.feature_per_frame)
         for(int i=1; i<it_per_id.feature_per_frame.size(); i++)

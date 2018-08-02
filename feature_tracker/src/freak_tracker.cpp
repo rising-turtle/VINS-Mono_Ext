@@ -237,13 +237,21 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
     for(int i=0; i<m_tracked.size(); i++)
     {
 	DMatch& m = m_tracked[i]; 
+	Vector3d tmpp; 
 	ot_pts[i] = pold->mvKPts[m.trainIdx].pt; 
+	m_camera->liftProjective(Eigen::Vector2d(ot_pts[i].x, ot_pts[i].y), tmpp);
+	ot_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
+	ot_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
+
 	nt_pts[i] = pnew->mvKPts[m.queryIdx].pt; 
+	m_camera->liftProjective(Eigen::Vector2d(nt_pts[i].x, nt_pts[i].y), tmpp);
+	nt_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
+	nt_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
     }
     // Mat F_model = cv::findFundamentalMat(ot_pts, nt_pts, cv::FM_8POINT); 
     vector<uchar> status;
    cv::Mat F_model = cv::findFundamentalMat(ot_pts, nt_pts, cv::FM_RANSAC, F_THRESHOLD, 0.99, status); 
-
+   
     // compute search radius 
     float l = maxDisparity(ot_pts, nt_pts); 
     l *= 1.5; 
@@ -283,13 +291,34 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
 
     const double* F = F_model.ptr<double>();
 
+    // undistortion 
+   for(int i=0; i<old_pts.size(); i++)
+   {
+	Eigen::Vector3d tmpp; 
+	m_camera->liftProjective(Eigen::Vector2d(old_pts[i].x, old_pts[i].y), tmpp); 
+	old_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
+	old_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
+   }
+	 
+   for(int i=0; i<new_pts.size(); i++)
+   {
+	Eigen::Vector3d tmpp; 
+	m_camera->liftProjective(Eigen::Vector2d(new_pts[i].x, new_pts[i].y), tmpp); 
+	new_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
+	new_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
+   }
+
     // search for matched points 
     for(int i=0; i<new_pts.size(); i++)
     {
 	Point2f& p1 = new_pts[i];
+	if(p1.x != p1.x || p1.y != p1.y) // skip nan pt 
+		continue; 
 	for(int j=0; j<old_pts.size(); j++)
 	{
 		Point2f& p2 = old_pts[j];
+		if(p2.x != p2.x || p2.y != p2.y)
+			continue;
 		float sqr_dis = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y); 
 		if(sqr_dis > l_sqr) // outside search radius 
 			continue; 
@@ -510,7 +539,11 @@ float CFreakTracker::maxDisparity(vector<Point2f>& pts1, vector<Point2f>& pts2)
 	for(int i=0; i<pts1.size(); i++)
 	{
 		Point2f& p1 = pts1[i]; 
-		Point2f& p2 = pts2[i]; 
+		Point2f& p2 = pts2[i];
+
+		// get rid of any nan pt
+		if(p1.x != p1.x || p1.y != p1.y || p2.x != p2.x || p2.y != p2.y)
+			continue; 
 		float sqr_dis = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y); 
 		if(l < sqr_dis) l = sqr_dis; 
 	}

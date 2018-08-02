@@ -465,6 +465,10 @@ void process()
                 double x = img_msg->points[i].x;
                 double y = img_msg->points[i].y;
                 double z = img_msg->points[i].z;
+		  // if(x != x)
+		  {
+			// cout <<"feature_id = "<<feature_id<<" p: "<<x<<" "<<y<<" "<<z<<endl;
+		  }
                 ROS_ASSERT(z == 1);
                 image[feature_id].emplace_back(camera_id, Vector3d(x, y, z));
             }

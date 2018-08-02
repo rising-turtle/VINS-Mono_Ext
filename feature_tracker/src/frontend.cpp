@@ -211,6 +211,10 @@ void CFrontend::pubCurFrame(const sensor_msgs::ImageConstPtr& img_msg)
 	p.x = un_pts[j].x;
 	p.y = un_pts[j].y;
 	p.z = 1;
+	// if(p.x != p.x)
+	{
+		// cout <<"p_id: "<<p_id<<" is "<<p.x<<" "<<p.y<<endl;
+	}
 
 	feature_points->points.push_back(p);
 	// id_of_point.values.push_back(p_id * NUM_OF_CAM + i);

@@ -86,6 +86,10 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count, const map<int, vec
 
         if (it == feature.end())
         {
+            // if(f_per_fra.point(0) != f_per_fra.point(0))
+	     {
+		// cout<<"new feature f_per_fra: id = "<<feature_id<<" pt: "<< f_per_fra.point(0)<<" "<< f_per_fra.point(1)<<endl;
+	     }
             feature.push_back(FeaturePerId(feature_id, frame_count));
             feature.back().feature_per_frame.push_back(f_per_fra);
 	    feature.back().frame_inc_num.push_back(0); 
@@ -93,6 +97,10 @@ bool FeatureManager::addFeatureCheckParallax(int frame_count, const map<int, vec
         }
         else if (it->feature_id == feature_id)
         {
+            // if(f_per_fra.point(0) != f_per_fra.point(0))
+	     {
+		// cout<<"matched feature f_per_fra: id = "<<feature_id<<" pt: "<< f_per_fra.point(0)<<" "<< f_per_fra.point(1)<<endl;
+	     }
             it->feature_per_frame.push_back(f_per_fra);
 	    it->frame_inc_num.push_back(frame_count - it->start_frame); // record the relative difference of frame number  
             last_track_num++;

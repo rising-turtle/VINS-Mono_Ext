@@ -84,6 +84,10 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
 #endif
         reduce = sqrt_info * reduce;
 
+        bool show_nan = false; 
+	 if(pts_j(0) != pts_j(0) || pts_i(0) != pts_i(0))
+	 	show_nan = true;
+
         if (jacobians[0])
         {
             Eigen::Map<Eigen::Matrix<double, 2, 7, Eigen::RowMajor>> jacobian_pose_i(jacobians[0]);
@@ -94,6 +98,26 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
 
             jacobian_pose_i.leftCols<6>() = reduce * jaco_i;
             jacobian_pose_i.rightCols<1>().setZero();
+
+	    if(jacobians[0][0] != jacobians[0][0])
+		   	show_nan = true; 
+	     if(show_nan)
+	     {
+		cout <<"jacobian_pose_i: "<<endl<<jacobian_pose_i<<endl;
+		cout <<"ric: "<< endl << ric<<endl;
+		cout <<"reduce: "<<endl<<reduce<<endl;
+		cout <<"sqrt_info: "<<endl<<sqrt_info<<endl; 
+		cout <<"Rj: "<<endl<<Rj<<endl;
+		cout <<"Ri: "<<endl<<Ri<<endl; 
+		cout <<"pts_i: "<<endl<<pts_i<<endl; 
+		cout <<"inv_dep_i: "<<endl<<inv_dep_i<<endl; 
+		cout <<"pts_j: "<<endl<<pts_j<<endl;
+		cout <<"pts_imu_i: "<<endl<<pts_imu_i<<endl;
+		cout <<"pts_imu_j: "<<endl<<pts_imu_j<<endl;
+		cout <<"pts_camera_i: "<<endl<<pts_camera_i<<endl;
+		cout <<"pts_camera_j: "<<endl<<pts_camera_j<<endl; 
+		
+	     }
         }
 
         if (jacobians[1])
@@ -106,6 +130,10 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
 
             jacobian_pose_j.leftCols<6>() = reduce * jaco_j;
             jacobian_pose_j.rightCols<1>().setZero();
+	     if(show_nan)
+	     {
+		cout <<"jacobian_pose_j: "<<endl<<jacobian_pose_j<<endl;
+	     }
         }
         if (jacobians[2])
         {
@@ -117,6 +145,10 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
                                      Utility::skewSymmetric(ric.transpose() * (Rj.transpose() * (Ri * tic + Pi - Pj) - tic));
             jacobian_ex_pose.leftCols<6>() = reduce * jaco_ex;
             jacobian_ex_pose.rightCols<1>().setZero();
+	     if(show_nan)
+	     {
+		cout <<"jacobian_ex_pose: "<<endl<<jacobian_ex_pose<<endl;
+	     }
         }
         if (jacobians[3])
         {
@@ -126,9 +158,14 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
 #else
             jacobian_feature = reduce * ric.transpose() * Rj.transpose() * Ri * ric * pts_i;
 #endif
-        }
+	     if(show_nan)
+	     {
+		cout <<"jacobian_feature: "<<endl<<jacobian_feature<<endl;
+	     }
+	}
     }
     sum_t += tic_toc.toc();
+
 
     return true;
 }
