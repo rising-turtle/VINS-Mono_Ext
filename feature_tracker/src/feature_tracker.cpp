@@ -175,11 +175,25 @@ void FeatureTracker::rejectWithF()
         {
             Eigen::Vector3d tmp_p;
             m_camera->liftProjective(Eigen::Vector2d(prev_pts[i].x, prev_pts[i].y), tmp_p);
+	     if(tmp_p(0) != tmp_p(0))
+	     {
+		Eigen::Vector3d tmp; 
+		if(liftPixel(Eigen::Vector2d(prev_pts[i].x, prev_pts[i].y), tmp))
+			tmp_p = tmp;
+	 	}
             tmp_p.x() = FOCAL_LENGTH * tmp_p.x() / tmp_p.z() + COL / 2.0;
             tmp_p.y() = FOCAL_LENGTH * tmp_p.y() / tmp_p.z() + ROW / 2.0;
             un_prev_pts[i] = cv::Point2f(tmp_p.x(), tmp_p.y());
+	     // cout <<"prev_pts: "<<prev_pts[i].x<<" "<< prev_pts[i].y<<endl; 
+	     // cout <<"undistorted pts: "<<un_prev_pts[i].x<<" "<<un_prev_pts[i].y<<endl;
 
             m_camera->liftProjective(Eigen::Vector2d(forw_pts[i].x, forw_pts[i].y), tmp_p);
+	     if(tmp_p(0) != tmp_p(0))
+	     {
+		Eigen::Vector3d tmp; 
+		if(liftPixel(Eigen::Vector2d(forw_pts[i].x, forw_pts[i].y), tmp))
+			tmp_p = tmp;
+	 	}
             tmp_p.x() = FOCAL_LENGTH * tmp_p.x() / tmp_p.z() + COL / 2.0;
             tmp_p.y() = FOCAL_LENGTH * tmp_p.y() / tmp_p.z() + ROW / 2.0;
             un_forw_pts[i] = cv::Point2f(tmp_p.x(), tmp_p.y());
@@ -227,6 +241,12 @@ void FeatureTracker::showUndistortion(const string &name)
             Eigen::Vector3d b;
             m_camera->liftProjective(a, b);
             distortedp.push_back(a);
+	     if(b(0) != b(0))
+	     {
+		 Eigen::Vector3d tmp; 
+		 if(liftPixel(a, tmp))
+			b = tmp;
+	      }
             undistortedp.push_back(Eigen::Vector2d(b.x() / b.z(), b.y() / b.z()));
             //printf("%f,%f->%f,%f,%f\n)\n", a.x(), a.y(), b.x(), b.y(), b.z());
         }
@@ -261,6 +281,12 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints()
         Eigen::Vector2d a(cur_pts[i].x, cur_pts[i].y);
         Eigen::Vector3d b;
         m_camera->liftProjective(a, b);
+	 if(b(0) != b(0))
+	 {
+		Eigen::Vector3d tmp; 
+		if(liftPixel(a, tmp))
+			b = tmp;
+	 }
         un_pts.push_back(cv::Point2f(b.x() / b.z(), b.y() / b.z()));
 	 if(un_pts[un_pts.size()-1].x != un_pts[un_pts.size()-1].x )
 	 {
@@ -270,4 +296,74 @@ vector<cv::Point2f> FeatureTracker::undistortedPoints()
     }
 
     return un_pts;
+}
+
+bool FeatureTracker::liftPixel(Eigen::Vector2d pt, Eigen::Vector3d& un_pt)
+{
+	Eigen::Vector2d y; 
+	camodocal::PinholeCamera* pcam = (camodocal::PinholeCamera*)m_camera.get();
+	const camodocal::PinholeCamera::Parameters& param = pcam->getParameters(); 
+	y.x() = (pt.x() - param.cx())/param.fx(); 
+	y.y() = (pt.y() - param.cy())/param.fy(); 
+	
+	// Undistort by optimizing
+    	const int max_iter = 100;
+    	const double tolerance = 1e-10; // 1e-10
+    	const double tolerance_loose = 1e-2; // much smaller threshold 
+    	Eigen::Vector2d ybar = y; // current guess (undistorted)
+    	Eigen::Vector2d ybar_pre = ybar; 
+    	Eigen::Matrix2d J;
+    	Eigen::Vector2d y_tmp; // current guess (distorted)
+    	Eigen::Vector2d e;
+    	Eigen::Vector2d du;
+    	Eigen::Vector2d tmp_dy; 
+	double du_norm;
+	double du_norm_pre = -1; 
+    	bool success = false;
+    	for (int i = 0; i < max_iter; i++) 
+	{
+		// distort(ybar,y_tmp,J);
+		pcam->distortion(ybar, tmp_dy, J); 
+		y_tmp = ybar + tmp_dy; 
+		e = y - y_tmp;
+		du = (J.transpose() * J).inverse() * J.transpose() * e;
+		ybar += du;
+		if (e.dot(e) <= tolerance)
+		{
+	    		success = true;
+	    		break;
+		}else
+		{
+			du_norm = du.norm(); 
+			if(du_norm_pre > 0 && du_norm > du_norm_pre)
+			{
+				// std::cout<<" du_norm = "<<du_norm<<" > du_norm_pre: "<<du_norm_pre<<", quit!"<<std::endl; 
+				if(e.dot(e) <= tolerance_loose)
+				{
+					ybar = ybar_pre;
+					success = true; 
+					break;
+				}
+			}
+			du_norm_pre = du_norm; 
+			ybar_pre = ybar; 
+		 	// std::cout<<" y = "<<y<<" y_tmp = "<<y_tmp<<" e = "<<e<<std::endl;
+	     	 	// std::cout<<"e.dot(e) = "<<e.dot(e)<<" > tolerance: "<<tolerance<<std::endl;
+	     	 	// std::cout<<"du = "<<du(0)<<", "<<du(1)<<" ybar = "<<ybar(0)<<", "<<ybar(1)<<std::endl;
+		}
+		if(du!=du)
+		{
+	    		// std::cout<<"du = "<<du<<" break!"<<std::endl;
+	    		// vec = Eigen::Vector3d(y(0), y(1), 1.0).normalized(); 
+	    		// return true; 
+	    		break;
+		}
+    }
+    if(success){
+	y = ybar;
+	// vec = Eigen::Vector3d(y(0),y(1),1.0).normalized();
+	un_pt = Eigen::Vector3d(y(0),y(1),1.0);
+    }
+    return success;
+
 }

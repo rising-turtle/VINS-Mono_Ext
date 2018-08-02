@@ -240,11 +240,23 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
 	Vector3d tmpp; 
 	ot_pts[i] = pold->mvKPts[m.trainIdx].pt; 
 	m_camera->liftProjective(Eigen::Vector2d(ot_pts[i].x, ot_pts[i].y), tmpp);
+	if(tmpp(0) != tmpp(0))
+	{
+		Eigen::Vector3d tmp; 
+		if(liftPixel(Eigen::Vector2d(ot_pts[i].x, ot_pts[i].y), tmp))
+			tmpp = tmp;
+	}
 	ot_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
 	ot_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
 
 	nt_pts[i] = pnew->mvKPts[m.queryIdx].pt; 
 	m_camera->liftProjective(Eigen::Vector2d(nt_pts[i].x, nt_pts[i].y), tmpp);
+	if(tmpp(0) != tmpp(0))
+	{
+		Eigen::Vector3d tmp; 
+		if(liftPixel(Eigen::Vector2d(nt_pts[i].x, nt_pts[i].y), tmp))
+			tmpp = tmp;
+	}
 	nt_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
 	nt_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
     }
@@ -296,6 +308,12 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
    {
 	Eigen::Vector3d tmpp; 
 	m_camera->liftProjective(Eigen::Vector2d(old_pts[i].x, old_pts[i].y), tmpp); 
+	if(tmpp(0) != tmpp(0))
+	{
+		Eigen::Vector3d tmp; 
+		if(liftPixel(Eigen::Vector2d(old_pts[i].x, old_pts[i].y), tmp))
+			tmpp = tmp;
+	}
 	old_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
 	old_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
    }
@@ -304,6 +322,12 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
    {
 	Eigen::Vector3d tmpp; 
 	m_camera->liftProjective(Eigen::Vector2d(new_pts[i].x, new_pts[i].y), tmpp); 
+	if(tmpp(0) != tmpp(0))
+	{
+		Eigen::Vector3d tmp; 
+		if(liftPixel(Eigen::Vector2d(new_pts[i].x, new_pts[i].y), tmp))
+			tmpp = tmp;
+	}
 	new_pts[i].x = FOCAL_LENGTH * tmpp.x() / tmpp.z() + COL/2.0; 
 	new_pts[i].y = FOCAL_LENGTH * tmpp.y() / tmpp.z() + ROW/2.0; 
    }

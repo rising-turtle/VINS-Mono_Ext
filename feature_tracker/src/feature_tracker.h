@@ -45,6 +45,8 @@ class FeatureTracker
 
     void rejectWithF();
 
+    bool liftPixel(Eigen::Vector2d pt, Eigen::Vector3d& un_pt); 
+
     vector<cv::Point2f> undistortedPoints();
 
     cv::Mat mask;
