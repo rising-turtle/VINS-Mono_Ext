@@ -81,15 +81,16 @@ bool pixelToBearing(Cam& cam, const Eigen::Vector2d& c,Eigen::Vector3d& vec)
 
     Eigen::Vector2d y_new; 
     // 
-    double lambda = 0.; 
+    double lambda = 0.1; 
     bool pos_updated = true;
 
+    double termepsilon = 0.0001; 
+    int term = 0; 
    // if(pos_updated)
     {
 	cam.distortEquidist(ybar, y_tmp, J); 
 	old_e = y - y_tmp;
     }
-
 
     for (int i = 0; i < max_iter; i++) 
     {
@@ -104,15 +105,19 @@ bool pixelToBearing(Cam& cam, const Eigen::Vector2d& c,Eigen::Vector3d& vec)
 		H(k, k) *= (1+lambda); 
 	    // du = (J.transpose() * J).inverse() * J.transpose() * e;
 	    du = H.inverse() * J.transpose() * old_e; 
-	    cout <<"du: "<<du(0)<<", "<<du(1)<<endl;
+	    // cout <<"du: "<<du(0)<<", "<<du(1)<<endl;
 
 	    // ybar += du;
 	    y_new = ybar + du; 
 	    cam.distortEquidist(y_new, y_tmp, Jnew); 
-	    new_e = y - y_new; 
+	    new_e = y - y_tmp; 
 	    
+	    double err_dis = fabs(new_e.norm()-old_e.norm());
+
 	    if(new_e.norm() < old_e.norm()) // new position is better
 	    {
+		// cout <<"new_e: "<<endl<<new_e<<endl;
+		// cout <<"old_e: "<<endl<<old_e<<endl;
 		cout <<"new_pos is better: new_e: "<<new_e.norm()<<" old_e : "<<old_e.norm()<<endl; 
 		ybar = y_new; 
 		old_e = new_e; 
@@ -121,6 +126,8 @@ bool pixelToBearing(Cam& cam, const Eigen::Vector2d& c,Eigen::Vector3d& vec)
 		cout <<"now y = "<<endl<<ybar<<endl<<"increase lambda: = "<<lambda<<endl; 
 		// pos_updated = true; 
 	    }else{	// old position is better, reject update 
+		// cout <<"new_e: "<<endl<<new_e<<endl;
+		// cout <<"old_e: "<<endl<<old_e<<endl;
 		lambda *= 0.9; 
 		// pos_updated = false; 
 		cout <<"new_pos is worse: new_e: "<<new_e.norm()<<" old_e : "<<old_e.norm()<<endl; 
@@ -134,6 +141,22 @@ bool pixelToBearing(Cam& cam, const Eigen::Vector2d& c,Eigen::Vector3d& vec)
 	    {
 		std::cout<<"du = "<<du<<" break!"<<std::endl;
 		break;
+	    }
+
+	    // termination test (slightly different than NR)
+	    if (err_dis > termepsilon) {
+		term = 0;
+	    }
+	    else {
+		term++;
+		cout <<"err_dis: "<<err_dis<<" term: "<<term<<endl;
+		if(term > 4)
+		{
+		    cout <<"delta_error remains constant, break! new_e_norm: "<<new_e.norm()<<endl;
+		    if(new_e.norm() < 1e-2)
+			success = true;
+		    break;
+		}
 	    }
 	}
     }

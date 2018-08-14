@@ -62,3 +62,4 @@ add_executable(test_cam_model src/test_cam_model.cpp)
 target_link_libraries(test_cam_model ${catkin_LIBRARIES})
 
 add_executable(test_cam_model_2 src/test_cam_model_2.cpp)
+add_executable(test_cam_model_lm src/test_cam_model_lm.cpp)
