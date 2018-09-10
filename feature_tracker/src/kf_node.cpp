@@ -20,7 +20,7 @@
 #include "parameters.h"
 #include "frontend.h"
 // #include "feature_tracker.h"
-#include "freak_tracker.h"
+#include "kf_tracker.h"
 
 ros::Publisher pub_img,pub_match;
 vector<uchar> r_status;
@@ -32,7 +32,7 @@ int pub_count = 1;
 bool first_image_flag = true;
 
 // FeatureTracker trackerData[NUM_OF_CAM];
-CFreakTracker trackerData[NUM_OF_CAM]; 
+KFTracker trackerData[NUM_OF_CAM]; 
 
 
 // get data from bag file 
@@ -53,7 +53,7 @@ void img_callback3(const sensor_msgs::ImageConstPtr &img_msg);
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "freak_tracker");
+    ros::init(argc, argv, "kf_tracker");
     ros::NodeHandle n("~");
     ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
     // ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug);

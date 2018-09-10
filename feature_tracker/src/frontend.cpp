@@ -12,7 +12,8 @@
 #include <cv_bridge/cv_bridge.h>
 #include "frontend.h"
 #include "feature_tracker.h"
-#include "freak_tracker.h"
+// #include "freak_tracker.h"
+#include "kf_tracker.h"
 
 CFrontend::CFrontend(FeatureTracker* ftracker) : 
 mpFTracker(ftracker),
@@ -61,7 +62,7 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     {
 	bool completed = false;
 	// completed |= mpFTracker->updateID(i);
-	completed |= ((CFreakTracker*)mpFTracker)->updateIDWithKF(i);
+	completed |= ((KFTracker*)mpFTracker)->updateIDWithKF(i);
 	if (!completed)
 	    break;
     }

@@ -5,9 +5,10 @@
 
 */
 
-#include "freak_tracker.h"
+// #include "kf_tracker.h"
+#include "kf_tracker.h"
 #include "keyframe.h"
-#include <opencv2/legacy/legacy.hpp>
+// #include <opencv2/legacy/legacy.hpp>
 
 using namespace std;
 using cv::Point2f; 
@@ -15,14 +16,14 @@ using cv::Mat;
 using cv::KeyPoint; 
 using cv::DMatch; 
 
-// make it static, shared by all CFreakTracker instances
-vector<int> CFreakTracker::gvIdTNum;
+// make it static, shared by all KFTracker instances
+vector<int> KFTracker::gvIdTNum;
 
-CFreakTracker::CFreakTracker(): 
+KFTracker::KFTracker(): 
 mpLastKF(0),
 mFrameCnt(0)
 {}
-CFreakTracker::~CFreakTracker()
+KFTracker::~KFTracker()
 {
 	while(!noKeyFrame())
 		removeOldKeyFrame();
@@ -30,7 +31,7 @@ CFreakTracker::~CFreakTracker()
 }
 
 // if >50% features are tracked, no need 
-bool CFreakTracker::needNewKeyFrame()
+bool KFTracker::needNewKeyFrame()
 {
     if(mpLastKF == 0) return true; 
     int N_matched = 0; 
@@ -54,7 +55,7 @@ bool CFreakTracker::needNewKeyFrame()
     return true;
 }
 
-int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
+int KFTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
 {
     vector<cv::DMatch> matches; 
     if(pnew->mUnTracked < LEAST_NUM_FOR_PNP) 
@@ -119,8 +120,8 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
 	}else{
 		int id1 = pold->mIds[m.trainIdx]; 
 		int id2 = pnew->mIds[m.queryIdx];
-		if(CFreakTracker::gvIdTNum[id1] > CFreakTracker::gvIdTNum[id2] || 
-			(CFreakTracker::gvIdTNum[id1] == CFreakTracker::gvIdTNum[id2] && id1 < id2)) // id1 is more accountable 
+		if(KFTracker::gvIdTNum[id1] > KFTracker::gvIdTNum[id2] || 
+			(KFTracker::gvIdTNum[id1] == KFTracker::gvIdTNum[id2] && id1 < id2)) // id1 is more accountable 
 		{
 			// assert(m.queryIdx < ids.size());
 			pnew->mIds[m.queryIdx] = pold->mIds[m.trainIdx]; 
@@ -134,7 +135,7 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
 }
 
 /*
-int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
+int KFTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
 {
     vector<cv::DMatch> matches; 
     if(pnew->mUnTracked < LEAST_NUM_FOR_PNP) 
@@ -226,7 +227,7 @@ int CFreakTracker::matchNewKeyFrame(CKeyFrame* pold, CKeyFrame* pnew)
     return ret;
 }*/
 
-std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, vector<cv::DMatch>& m_tracked,
+std::vector<cv::DMatch> KFTracker::findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, vector<cv::DMatch>& m_tracked,
 						    vector<bool>& old_matched)
 {
     vector<DMatch> ret;
@@ -381,7 +382,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
 }
 
 /*
-std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, vector<cv::DMatch>& m_tracked,
+std::vector<cv::DMatch> KFTracker::findMatchByTracked(CKeyFrame * pold, CKeyFrame* pnew, vector<cv::DMatch>& m_tracked,
 						    vector<Point2f>& old_pts, Mat& old_desc, 
 						    vector<Point2f>& new_pts, Mat& new_desc)
 {
@@ -416,8 +417,8 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByTracked(CKeyFrame * pold, CKey
     }
     return ret; 
 }*/
-
-std::vector<cv::DMatch> CFreakTracker::matchDesc(Mat& train_desc, Mat& query_desc)
+/*
+std::vector<cv::DMatch> KFTracker::matchDesc(Mat& train_desc, Mat& query_desc)
 {
     vector<DMatch> matches; 
 #if CV_SSSE3
@@ -427,9 +428,9 @@ std::vector<cv::DMatch> CFreakTracker::matchDesc(Mat& train_desc, Mat& query_des
 #endif
     matcher.match(query_desc, train_desc, matches); // bug: match (query, train, matches)
     return matches; 
-}
-
-std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFrame* pnew, 
+}*/
+/*
+std::vector<cv::DMatch> KFTracker::findMatchByPnP(CKeyFrame * pold, CKeyFrame* pnew, 
 						    vector<bool>& old_matched, vector<bool>& new_matched)
 {
     vector<DMatch> ret;
@@ -532,9 +533,9 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(CKeyFrame * pold, CKeyFram
     // ROS_WARN("Assign return ");
     return ret; 
 }
-
+*/
 /*
-std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(vector<Point2f>& old_pts, Mat& old_desc, 
+std::vector<cv::DMatch> KFTracker::findMatchByPnP(vector<Point2f>& old_pts, Mat& old_desc, 
 						    vector<Point2f>& new_pts, Mat& new_desc)
 {
     vector<DMatch> ret;
@@ -556,7 +557,7 @@ std::vector<cv::DMatch> CFreakTracker::findMatchByPnP(vector<Point2f>& old_pts, 
 }*/
 
 
-float CFreakTracker::maxDisparity(vector<Point2f>& pts1, vector<Point2f>& pts2)
+float KFTracker::maxDisparity(vector<Point2f>& pts1, vector<Point2f>& pts2)
 {
 	assert(pts1.size() == pts2.size()); 
 	float l = 0;
@@ -575,7 +576,7 @@ float CFreakTracker::maxDisparity(vector<Point2f>& pts1, vector<Point2f>& pts2)
 }
 
 // match the newly added feature point with pts in keyframe 
-int CFreakTracker::checkNewPoints()
+int KFTracker::checkNewPoints()
 {
  if(mpLastKF == 0) return 0; 
     if(n_pts.size() < LEAST_NUM_FOR_PNP) return 0; 
@@ -678,19 +679,19 @@ int CFreakTracker::checkNewPoints()
 	if(good_match)
 	{
 		ids[i] = mpLastKF->mIds[oIdMap[j]];
-		track_cnt[i] = ++CFreakTracker::gvIdTNum[ids[i]];
+		track_cnt[i] = ++KFTracker::gvIdTNum[ids[i]];
 		++ret;
 	}
     }
     if(ret > 0)
-		ROS_INFO("freak_tracker: in checkNewPoints add %d unmatched features", ret);
+		ROS_INFO("kf_tracker: in checkNewPoints add %d unmatched features", ret);
     return ret; 
 
 }
 
 /*
 // discards this function, since using spatial search is enough
-int CFreakTracker::checkNewPoints()
+int KFTracker::checkNewPoints()
 {
     if(mpLastKF == 0) return 0; 
     if(n_pts.size() < LEAST_NUM_FOR_PNP) return 0; 
@@ -786,7 +787,7 @@ int CFreakTracker::checkNewPoints()
 	{
 	    int matched_id = mpLastKF->mIds[oIdMap[matches[i].trainIdx]];
 	    ids[N_tracked+matches[i].queryIdx] = matched_id; 
-	    track_cnt[N_tracked+matches[i].queryIdx] = ++CFreakTracker::gvIdTNum[matched_id];
+	    track_cnt[N_tracked+matches[i].queryIdx] = ++KFTracker::gvIdTNum[matched_id];
 	    ++ret; 
 	}
     }
@@ -794,7 +795,7 @@ int CFreakTracker::checkNewPoints()
 }
 */
 
-void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
+void KFTracker::addKeyFrame(CKeyFrame* pkf)
 {
     deque<CKeyFrame*>::reverse_iterator rit = mqKFs.rbegin(); 
     // bool matched_newKF = false; 
@@ -823,7 +824,7 @@ void CFreakTracker::addKeyFrame(CKeyFrame* pkf)
     return ;
 }
 
-void CFreakTracker::removeOldKeyFrame()
+void KFTracker::removeOldKeyFrame()
 {
 	if(noKeyFrame())
 		return; 
@@ -831,12 +832,12 @@ void CFreakTracker::removeOldKeyFrame()
 	mqKFs.pop_front();
 	delete p; 
 }
-bool CFreakTracker::noKeyFrame()
+bool KFTracker::noKeyFrame()
 {
 	return (mqKFs.size() == 0); 
 }
 
-bool CFreakTracker::updateIDWithKF(int i)
+bool KFTracker::updateIDWithKF(int i)
 {
     if (i < ids.size())
     {
@@ -847,17 +848,17 @@ bool CFreakTracker::updateIDWithKF(int i)
 	     	if(mpLastKF->mIds[i] != -1) // this new point has been matched with previous ones
 		{
 			ids[i] = mpLastKF->mIds[i];
-			track_cnt[i] = CFreakTracker::gvIdTNum[ids[i]];
+			track_cnt[i] = KFTracker::gvIdTNum[ids[i]];
 	     	}else // this point is a new feature point
 	     	{
 			ids[i] = n_id++;
-	    	       CFreakTracker::gvIdTNum.push_back(1);
+	    	       KFTracker::gvIdTNum.push_back(1);
 			mpLastKF->mIds[i] = ids[i];
 		}
 	     }else // no new KF
 	     {
 			ids[i] = n_id++; // assign a new id
-			CFreakTracker::gvIdTNum.push_back(1);
+			KFTracker::gvIdTNum.push_back(1);
 	     }
         }
         return true;
@@ -866,7 +867,7 @@ bool CFreakTracker::updateIDWithKF(int i)
         return false;
 }
 
-CKeyFrame* CFreakTracker::createNewKeyFrame()
+CKeyFrame* KFTracker::createNewKeyFrame()
 {
     CKeyFrame* pkf = new CKeyFrame(); 
     int N = forw_pts.size(); 
@@ -896,9 +897,9 @@ CKeyFrame* CFreakTracker::createNewKeyFrame()
     return pkf; 
 }	
 
-void CFreakTracker::readImage(const cv::Mat &_img)
+void KFTracker::readImage(const cv::Mat &_img)
 {
-    ROS_WARN_ONCE("freak_tracker: in readImage!");
+    ROS_WARN_ONCE("kf_tracker: in readImage!");
     cv::Mat img;
     TicToc t_r;
     ++mFrameCnt;
@@ -952,7 +953,7 @@ void CFreakTracker::readImage(const cv::Mat &_img)
         for(int i=0; i<track_cnt.size(); i++)
 	{
 		track_cnt[i]++;
-		CFreakTracker::gvIdTNum[ids[i]]++;
+		KFTracker::gvIdTNum[ids[i]]++;
 	}
 
         ROS_DEBUG("set mask begins");
@@ -1009,7 +1010,7 @@ void CFreakTracker::readImage(const cv::Mat &_img)
     cur_pts = forw_pts;
 }
 
- void CFreakTracker::computeError( cv::InputArray _m1, cv::InputArray _m2, cv::InputArray _model, cv::OutputArray _err ) 
+ void KFTracker::computeError( cv::InputArray _m1, cv::InputArray _m2, cv::InputArray _model, cv::OutputArray _err ) 
     {
         Mat __m1 = _m1.getMat(), __m2 = _m2.getMat(), __model = _model.getMat();
         int i, count = __m1.checkVector(2);

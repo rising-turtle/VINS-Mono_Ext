@@ -42,7 +42,9 @@
 #include <tmmintrin.h>
 #include <string.h>
 
-#include <opencv2/features2d/features2d.hpp>
+// #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -82,9 +84,9 @@ static const double FREAK_LOG2 = 0.693147180559945;
 static const int FREAK_NB_ORIENTATION = 256;
 static const int FREAK_NB_POINTS = 43;
 static const int FREAK_SMALLEST_KP_SIZE = 7; // smallest size of keypoints
-static const int FREAK_NB_SCALES = cv::FREAK::NB_SCALES;
-static const int FREAK_NB_PAIRS = cv::FREAK::NB_PAIRS;
-static const int FREAK_NB_ORIENPAIRS = cv::FREAK::NB_ORIENPAIRS;
+static const int FREAK_NB_SCALES = cv::xfeatures2d::FREAK::NB_SCALES;
+static const int FREAK_NB_PAIRS = cv::xfeatures2d::FREAK::NB_PAIRS;
+static const int FREAK_NB_ORIENPAIRS = cv::xfeatures2d::FREAK::NB_ORIENPAIRS;
 
 static const int CV_FREAK_DEF_PAIRS[CV_FREAK_NB_PAIRS] = { // default pairs
                                     404,431,818,511,181,52,311,874,774,543,719,230,417,205,11,

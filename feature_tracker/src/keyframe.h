@@ -16,7 +16,7 @@ class CKeyFrame
 public:
     CKeyFrame();
     virtual ~CKeyFrame(); 
-    void describe(); 
+    // void describe(); 
 
     cv::Mat mImg; // camera image
     std::vector<cv::KeyPoint> mvKPts;  // key points in the mImg
@@ -26,5 +26,5 @@ public:
     std::vector<int> mDes2Id; // map from descriptor to Id
     bool mbDiscribed; // whether the freak descriptor has been computed
 protected:
-    void describe(cv::Mat& img, std::vector<cv::KeyPoint>& kpts, cv::Mat& desc);
+    // void describe(cv::Mat& img, std::vector<cv::KeyPoint>& kpts, cv::Mat& desc);
 };
