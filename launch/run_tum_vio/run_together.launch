@@ -1,7 +1,9 @@
 
 <launch>
     <arg name="vins_folder" default = "/home/hzhang8/work/ros/kinetic/src/VINS-Mono_Ext"/>
-    <arg name="config_path" default = "$(arg vins_folder)/config/tum_vio_config.yaml" />
+    <!--arg name="config_path" default = "$(arg vins_folder)/config/tum_vio_config.yaml" /-->
+    <arg name="config_path" default = "$(arg vins_folder)/config/tum_config.yaml" />
+
     <arg name="vins_path" default = "$(arg vins_folder)/" />
     
    <include file="../vins_rviz_ext_compare.launch"/>

@@ -79,6 +79,20 @@ int main(int argc, char **argv)
     for (int i = 0; i < NUM_OF_CAM; i++)
         trackerData[i].readIntrinsicParameter(CAM_NAMES[i]);
 
+    if(FISHEYE)
+    {
+	for (int i = 0; i < NUM_OF_CAM; i++)
+	{
+	    trackerData[i].fisheye_mask = cv::imread(FISHEYE_MASK, 0);
+	    if(!trackerData[i].fisheye_mask.data)
+	    {
+		ROS_INFO("load mask fail");
+		ROS_BREAK();
+	    }
+	    else
+		ROS_INFO("load mask success");
+	}
+    }
     CFrontend fe(&trackerData[0]); 
     // ros::Subscriber sub_img = n.subscribe(IMAGE_TOPIC, 100, img_callback);
     

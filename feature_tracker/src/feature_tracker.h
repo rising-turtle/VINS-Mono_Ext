@@ -42,6 +42,8 @@ class FeatureTracker
     void readIntrinsicParameter(const string &calib_file);
 
     void showUndistortion(const string &name);
+    
+    void undistortedPoints_new(); 
 
     void rejectWithF();
 
@@ -57,6 +59,10 @@ class FeatureTracker
     vector<int> ids;
     vector<int> track_cnt;
     camodocal::CameraPtr m_camera;
+    
+    vector<cv::Point2f> prev_un_pts, cur_un_pts;
+    map<int, cv::Point2f> cur_un_pts_map;
+    map<int, cv::Point2f> prev_un_pts_map;
 
     static int n_id;
 };

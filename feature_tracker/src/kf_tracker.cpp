@@ -939,23 +939,22 @@ void KFTracker::readImage(const cv::Mat &_img)
         reduceVector(cur_pts, status);
         reduceVector(forw_pts, status);
         reduceVector(ids, status);
+	reduceVector(cur_un_pts, status);
         reduceVector(track_cnt, status);
         ROS_DEBUG("temporal optical flow costs: %fms", t_o.toc());
     }
 
     mbNewKF = false; 
+    // for (auto &n : track_cnt)
+    // n++;
+    for(int i=0; i<track_cnt.size(); i++)
+    {
+	track_cnt[i]++;
+	KFTracker::gvIdTNum[ids[i]]++;
+    }
     if (PUB_THIS_FRAME)
     {
         rejectWithF();
-
-        // for (auto &n : track_cnt)
-            // n++;
-        for(int i=0; i<track_cnt.size(); i++)
-	{
-		track_cnt[i]++;
-		KFTracker::gvIdTNum[ids[i]]++;
-	}
-
         ROS_DEBUG("set mask begins");
         TicToc t_m;
         setMask();
@@ -972,7 +971,8 @@ void KFTracker::readImage(const cv::Mat &_img)
                 cout << "mask type wrong " << endl;
             if (mask.size() != forw_img.size())
                 cout << "wrong size " << endl;
-            cv::goodFeaturesToTrack(forw_img, n_pts, MAX_CNT - forw_pts.size(), 0.1, MIN_DIST, mask);
+            // cv::goodFeaturesToTrack(forw_img, n_pts, MAX_CNT - forw_pts.size(), 0.1, MIN_DIST, mask);
+            cv::goodFeaturesToTrack(forw_img, n_pts, MAX_CNT - forw_pts.size(), 0.01, MIN_DIST, mask);
         }
         else
             n_pts.clear();
@@ -1003,11 +1003,14 @@ void KFTracker::readImage(const cv::Mat &_img)
 	    ROS_DEBUG("checkNewPoints cost %f ms add %d new matches", t_cnp.toc(), added); 
 	}
 	
-        prev_img = forw_img;
-        prev_pts = forw_pts;
     }
+    prev_img = forw_img;
+    prev_pts = forw_pts;
+    prev_un_pts = cur_un_pts; 
     cur_img = forw_img;
     cur_pts = forw_pts;
+    
+    undistortedPoints_new(); 
 }
 
  void KFTracker::computeError( cv::InputArray _m1, cv::InputArray _m2, cv::InputArray _model, cv::OutputArray _err ) 
