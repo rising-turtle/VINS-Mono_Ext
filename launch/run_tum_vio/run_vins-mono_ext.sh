@@ -15,13 +15,14 @@
 # rosbag_name_list="slides1 slides2 slides3"
 # rosbag_name_list="outdoors3 outdoors4 outdoors5 outdoors6 outdoors7 outdoors8"
 
- rosbag_name_list="room1 room2 room3 room4 room5 room6"
+ rosbag_name_list="room1 room2 room3 room4 room5 room6 corridor1 corridor2 corridor3 corridor4 corridor5 magistrale1 magistrale2 magistrale3 magistrale4 magistrale5 magistrale6 slides1 slides2 slides3 "
 times=5
 
 cur_dir=`pwd`
 
-rosbag_dir="/media/davidz/Seagate Backup Plus Drive/dataset/tum_vio"
+# rosbag_dir="/media/davidz/Seagate Backup Plus Drive/dataset/tum_vio"
 # roslaunch_file="run_together_no_view.launch"
+rosbag_dir="/home/hzhang8/work/data/tum_vio"
 roslaunch_file="test.launch"
 result_dir="$cur_dir/../../result"
 rosbag_file=""
@@ -58,8 +59,8 @@ do_it(){
     fi
     
     # cp "../vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
-    cp "/home/davidz/work/software/vins_result_no_loop.csv" "tum_vio_result/tmp/$rosbag_name/vins-mono_ext/result_$i.log"
-    # cp "vins_result.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
+    # cp "/home/davidz/work/software/vins_result_no_loop.csv" "tum_vio_result/tmp/$rosbag_name/vins-mono_ext/result_$i.log"
+    cp "vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
 
     echo -ne '\n'
 }
