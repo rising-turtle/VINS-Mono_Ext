@@ -6,7 +6,8 @@ image_topic: "/cam0/image_raw"
 # output_path: "/home/tony-ws1/output/"
 # output_path: "/home/hzhang8/work/ros/kinetic/src/VINS-Mono"
 # output_path: "/home/davidz/work/ros/indigo/src/VINS-Mono_Ext/result"
-output_path: "vins_result_no_loop.csv"
+# output_path: "vins_result_no_loop.csv"
+output_path: "/home/davidz/work/software"
 
 #camera calibration 
 model_type: KANNALA_BRANDT

@@ -366,7 +366,7 @@ std::vector<cv::DMatch> KFTracker::findMatchByTracked(CKeyFrame * pold, CKeyFram
             d1 = p2.x*a +p2.y*b + c;
 
             float err = (float)std::max(d1*d1*s1, d2*d2*s2);
-	     if(err <= F_THRESHOLD/16.) //F_THRESHOLD/2.  find a good match
+	     if(err <= F_THRESHOLD/4.) //F_THRESHOLD/2.  find a good match
 	     // if(err <= 1.0)
 	     {
 	     		DMatch m;

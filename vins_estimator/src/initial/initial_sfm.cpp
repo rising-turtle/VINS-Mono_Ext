@@ -280,11 +280,11 @@ bool GlobalSFM::construct(int frame_num, Quaterniond* q, Vector3d* T, int l,
 	//std::cout << summary.BriefReport() << "\n";
 	if (summary.termination_type == ceres::CONVERGENCE || summary.final_cost < 5e-03)
 	{
-		cout << "vision only BA converge" << endl;
+		//cout << "vision only BA converge" << endl;
 	}
 	else
 	{
-		cout << "vision only BA not converge " << endl;
+		//cout << "vision only BA not converge " << endl;
 		return false;
 	}
 	for (int i = 0; i < frame_num; i++)

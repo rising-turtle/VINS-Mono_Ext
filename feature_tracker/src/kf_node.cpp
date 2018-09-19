@@ -34,7 +34,6 @@ bool first_image_flag = true;
 // FeatureTracker trackerData[NUM_OF_CAM];
 KFTracker trackerData[NUM_OF_CAM]; 
 
-
 // get data from bag file 
 // string g_bagf = "/home/davidz/work/data/ETAS_2F_640_30/rgb.bag"; 
 // string g_bagf = "/home/davidz/work/data/ETAS_F2_640_30/rgb.bag"; 
