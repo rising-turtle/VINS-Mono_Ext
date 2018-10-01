@@ -3,7 +3,7 @@ project(feature_tracker_ext)
 
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -w -mssse3")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -mssse3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -w -g -mssse3")
 
 find_package(catkin REQUIRED COMPONENTS
     roscpp
