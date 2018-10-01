@@ -1,0 +1,23 @@
+
+<launch>
+    <!--arg name="vins_folder" default = "/home/hzhang8/work/ros/kinetic/src/VINS-Mono_Ext"/-->
+    <arg name="vins_folder" default="/home/davidz/work/ros/indigo/src/VINS-Mono_Ext"/>
+    <!--arg name="config_path" default = "$(arg vins_folder)/config/tum_vio_config.yaml" /-->
+    <arg name="config_path" default = "$(arg vins_folder)/config/tum_config.yaml" />
+
+    <arg name="vins_path" default = "$(arg vins_folder)/" />
+    
+   <!--include file="../vins_rviz_ext_compare.launch"/-->
+    <node pkg="feature_tracker_ext" type="kf_tracker" name="kf_tracker" output="screen">
+        <param name="config_file" type="string" value="$(arg config_path)" />
+        <param name="vins_folder" type="string" value="$(arg vins_path)" />
+	<remap from="/kf_tracker/feature_img" to="/feature_tracker_ext/feature_img"/>
+    </node>
+
+    <node name="vins_estimator_ext" pkg="vins_estimator_ext" type="vins_estimator_ext" output="screen">
+       <remap from="/feature_tracker/feature" to="/kf_tracker/feature"/>
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <param name="vins_folder" type="string" value="$(arg vins_path)" />
+    </node>
+
+</launch>

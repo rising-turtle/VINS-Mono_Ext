@@ -45,6 +45,7 @@ public:
     bool mbShowTrack;	// whether to publish img with tracked feature for display
     // int mWinSize; 		// number of nodes in the window, outside nodes are marginalized 
     
+    bool init_pub; 
     // publisher 
     ros::Publisher mPubImg; 
     ros::Publisher mPubMatch; 

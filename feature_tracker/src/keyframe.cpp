@@ -6,9 +6,9 @@
 */
 
 #include "keyframe.h"
-#include "../freak/freak.h"
-#include "../freak/hammingseg.h"
-#include <opencv2/legacy/legacy.hpp>
+// #include "../freak/freak.h"
+// #include "../freak/hammingseg.h"
+// #include <opencv2/legacy/legacy.hpp>
 #include <iostream>
 #include <fstream>
 
@@ -18,7 +18,7 @@ CKeyFrame::CKeyFrame():
 mbDiscribed(false)
 {}
 CKeyFrame::~CKeyFrame(){}
-
+/*
 void CKeyFrame::describe(cv::Mat& img, vector<cv::KeyPoint>& kpts, cv::Mat& desc)
 {
     cv_ext::FREAK extractor; 
@@ -69,4 +69,4 @@ void CKeyFrame::describe()
 //	
     mbDiscribed = true; 
     return ; 
-}
+}*/

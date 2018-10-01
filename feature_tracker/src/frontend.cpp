@@ -12,12 +12,14 @@
 #include <cv_bridge/cv_bridge.h>
 #include "frontend.h"
 #include "feature_tracker.h"
-#include "freak_tracker.h"
+// #include "freak_tracker.h"
+#include "kf_tracker.h"
 
 CFrontend::CFrontend(FeatureTracker* ftracker) : 
 mpFTracker(ftracker),
 mPubCnt(1), // bug, it is 1 not 0
 mbFirstImgFlag(true),
+init_pub(true),
 mbShowTrack(false)
 {
     ros::NodeHandle n("~"); 
@@ -49,7 +51,23 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     else
 	PUB_THIS_FRAME = false; 
 
-    cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
+    // cv_bridge::CvImageConstPtr ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
+    cv_bridge::CvImageConstPtr ptr;
+    if (img_msg->encoding == "8UC1")
+    {
+	sensor_msgs::Image img;
+	img.header = img_msg->header;
+	img.height = img_msg->height;
+	img.width = img_msg->width;
+	img.is_bigendian = img_msg->is_bigendian;
+	img.step = img_msg->step;
+	img.data = img_msg->data;
+	img.encoding = "mono8";
+	ptr = cv_bridge::toCvCopy(img, sensor_msgs::image_encodings::MONO8);
+    }
+    else
+	ptr = cv_bridge::toCvCopy(img_msg, sensor_msgs::image_encodings::MONO8);
+
     cv::Mat show_img = ptr->image;
     TicToc t_r;
 
@@ -61,7 +79,7 @@ void CFrontend::imgCallback(const sensor_msgs::ImageConstPtr& img_msg)
     {
 	bool completed = false;
 	// completed |= mpFTracker->updateID(i);
-	completed |= ((CFreakTracker*)mpFTracker)->updateIDWithKF(i);
+	completed |= ((KFTracker*)mpFTracker)->updateIDWithKF(i);
 	if (!completed)
 	    break;
     }
@@ -200,34 +218,39 @@ void CFrontend::pubCurFrame(const sensor_msgs::ImageConstPtr& img_msg)
     feature_points->header.frame_id = "world";
 
     set<int> hash_ids; 
-    auto un_pts = mpFTracker->undistortedPoints();
+    // auto un_pts = mpFTracker->undistortedPoints();
+    auto &un_pts = mpFTracker->cur_un_pts; 
     auto &cur_pts = mpFTracker->cur_pts;
     auto &ids = mpFTracker->ids;
     for (unsigned int j = 0; j < ids.size(); j++)
     {
-	int p_id = ids[j];
-	hash_ids.insert(p_id);
-	geometry_msgs::Point32 p;
-	p.x = un_pts[j].x;
-	p.y = un_pts[j].y;
-	p.z = 1;
-	// if(p.x != p.x)
+	if(mpFTracker->track_cnt[j] > 1)
 	{
+	    int p_id = ids[j];
+	    hash_ids.insert(p_id);
+	    geometry_msgs::Point32 p;
+	    p.x = un_pts[j].x;
+	    p.y = un_pts[j].y;
+	    p.z = 1;
+	    // if(p.x != p.x)
+	    {
 		// cout <<"p_id: "<<p_id<<" is "<<p.x<<" "<<p.y<<endl;
-	}
+	    }
 
-	feature_points->points.push_back(p);
-	// id_of_point.values.push_back(p_id * NUM_OF_CAM + i);
-	id_of_point.values.push_back(p_id);
-	u_of_point.values.push_back(cur_pts[j].x);
-	v_of_point.values.push_back(cur_pts[j].y);
-	ROS_ASSERT(inBorder(cur_pts[j]));
+	    feature_points->points.push_back(p);
+	    // id_of_point.values.push_back(p_id * NUM_OF_CAM + i);
+	    id_of_point.values.push_back(p_id);
+	    u_of_point.values.push_back(cur_pts[j].x);
+	    v_of_point.values.push_back(cur_pts[j].y);
+	    ROS_ASSERT(inBorder(cur_pts[j]));
+	}
     }
     feature_points->channels.push_back(id_of_point);
     feature_points->channels.push_back(u_of_point);
     feature_points->channels.push_back(v_of_point);
     ROS_DEBUG("publish %f, at %f", feature_points->header.stamp.toSec(), ros::Time::now().toSec());
-    mPubImg.publish(feature_points); 
+    if(init_pub) init_pub = false;
+    else mPubImg.publish(feature_points); 
     // ros::spinOnce();
 
     if (SHOW_TRACK)

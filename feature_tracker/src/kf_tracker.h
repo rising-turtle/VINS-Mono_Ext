@@ -13,11 +13,11 @@
 
 class CKeyFrame; 
 
-class CFreakTracker : public FeatureTracker
+class KFTracker : public FeatureTracker
 {
 public:
-    CFreakTracker();
-    ~CFreakTracker(); 
+    KFTracker();
+    ~KFTracker(); 
     
     // handle new image following FREAK feature match pipeline, 
     // yet, extract feature using good_feature_to_track
@@ -46,11 +46,11 @@ public:
     // std::vector<cv::DMatch> findMatchByPnP(std::vector<cv::Point2f>& old_pts, cv::Mat& old_desc, 
 	//				       std::vector<cv::Point2f>& new_pts, cv::Mat& new_desc); 
 	
-    std::vector<cv::DMatch> findMatchByPnP(CKeyFrame * pold, CKeyFrame* pnew, 
-						    std::vector<bool>& old_matched, std::vector<bool>& new_matched);
+    // std::vector<cv::DMatch> findMatchByPnP(CKeyFrame * pold, CKeyFrame* pnew, 
+    //						    std::vector<bool>& old_matched, std::vector<bool>& new_matched);
     
     // match features using freak discriptor 
-    std::vector<cv::DMatch> matchDesc(cv::Mat& train_desc, cv::Mat& query_desc);
+    // std::vector<cv::DMatch> matchDesc(cv::Mat& train_desc, cv::Mat& query_desc);
 
     // find max disparity between two sets of keypoints 
     float maxDisparity(std::vector<cv::Point2f>& pts1, std::vector<cv::Point2f>& pts2);

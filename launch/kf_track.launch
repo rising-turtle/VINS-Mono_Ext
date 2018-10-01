@@ -5,7 +5,7 @@
     
    <include file="vins_rviz.launch"/>
 
-    <node  pkg="feature_tracker_ext" type="freak_tracker" name="freak_tracker" output="screen">
+    <node  pkg="feature_tracker_ext" type="kf_tracker" name="kf_tracker" output="screen">
         <param name="config_file" type="string" value="$(arg config_path)" />
         <param name="vins_folder" type="string" value="$(arg vins_path)" />
     </node>
