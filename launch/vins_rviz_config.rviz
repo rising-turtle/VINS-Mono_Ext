@@ -25,7 +25,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: raw_image
+    SyncSource: history_point
   - Class: rviz/Displays
     Help Height: 78
     Name: Displays
@@ -89,7 +89,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: FlatColor
       Decay Time: 3000
-      Enabled: true
+      Enabled: false
       Invert Rainbow: true
       Max Color: 0; 0; 0
       Max Intensity: 4096
@@ -106,7 +106,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: false
-      Value: true
+      Value: false
     - Class: rviz/Image
       Enabled: true
       Image Topic: /feature_tracker_ext/feature_img
@@ -124,7 +124,7 @@ Visualization Manager:
       Marker Topic: /vins_estimator/camera_pose_visual
       Name: camera_visual
       Namespaces:
-        CameraPoseVisualization: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -278,10 +278,10 @@ Visualization Manager:
         Z: 7.56846
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.1998
+      Pitch: 0.6098
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.64311
+      Yaw: 5.33811
     Saved: ~
 Window Geometry:
   Displays:
@@ -299,7 +299,7 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1242
-  X: 166
+  X: 395
   Y: 9
   raw_image:
     collapsed: false

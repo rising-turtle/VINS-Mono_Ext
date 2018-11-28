@@ -15,8 +15,13 @@
 # rosbag_name_list="slides1 slides2 slides3"
 # rosbag_name_list="outdoors3 outdoors4 outdoors5 outdoors6 outdoors7 outdoors8"
 
- rosbag_name_list="room1 room2 room3 room4 room5 room6"
-times=5
+ # rosbag_name_list="room1 room2 room3 room4 room5 room6 corridor1 corridor2 corridor3 corridor4 corridor5 magistrale1 magistrale2 magistrale3 magistrale4 magistrale5 magistrale6 slides1 slides2 slides3"
+ # rosbag_name_list="room1 room2 room3 room4 room5 room6 corridor1 corridor2 corridor3 corridor4 corridor5 magistrale1 magistrale2 magistrale3 magistrale4 magistrale5 magistrale6 slides1 slides2 slides3"
+
+# outdoors1 outdoors2 
+rosbag_name_list="outdoors3 outdoors4 outdoors5 outdoors6 outdoors7 outdoors8"
+
+times=1
 
 cur_dir=`pwd`
 
@@ -58,7 +63,7 @@ do_it(){
     fi
     
     # cp "../vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
-    cp "/home/davidz/work/software/vins_result_no_loop.csv" "tum_vio_result/tmp/$rosbag_name/vins-mono_ext/result_$i.log"
+    cp "/home/davidz/work/software/vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
     # cp "vins_result.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
 
     echo -ne '\n'

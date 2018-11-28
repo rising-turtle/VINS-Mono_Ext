@@ -8,7 +8,7 @@
     <arg name="vins_path" default = "$(arg vins_folder)/" />
     
    <!--include file="../vins_rviz_ext_compare.launch"/-->
-    <node pkg="feature_tracker_ext" type="kf_tracker" name="kf_tracker" output="screen">
+    <node pkg="feature_tracker_ext" type="kf_tracker" name="kf_tracker" output="log">
         <param name="config_file" type="string" value="$(arg config_path)" />
         <param name="vins_folder" type="string" value="$(arg vins_path)" />
 	<remap from="/kf_tracker/feature_img" to="/feature_tracker_ext/feature_img"/>
