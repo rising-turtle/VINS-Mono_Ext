@@ -17,8 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(OpenCV REQUIRED)
 
+# set(Ceres_DIR "/home/robot/hzhang/3rdlib/okvis/build/share/Ceres")
 message(WARNING "OpenCV_VERSION: ${OpenCV_VERSION}")
-
 find_package(Ceres REQUIRED)
 
 include_directories(${catkin_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS})

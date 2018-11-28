@@ -22,11 +22,11 @@
 rosbag_name_list="outdoors3 outdoors4 outdoors5 outdoors6 outdoors7 outdoors8"
 
 times=1
-
 cur_dir=`pwd`
 
-rosbag_dir="/media/davidz/Seagate Backup Plus Drive/dataset/tum_vio"
+# rosbag_dir="/media/davidz/Seagate Backup Plus Drive/dataset/tum_vio"
 # roslaunch_file="run_together_no_view.launch"
+rosbag_dir="/home/hzhang8/work/data/tum_vio"
 roslaunch_file="test.launch"
 result_dir="$cur_dir/../../result"
 rosbag_file=""
@@ -63,8 +63,8 @@ do_it(){
     fi
     
     # cp "../vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
-    cp "/home/davidz/work/software/vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
-    # cp "vins_result.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
+    # cp "/home/davidz/work/software/vins_result_no_loop.csv" "tum_vio_result/tmp/$rosbag_name/vins-mono_ext/result_$i.log"
+    cp "vins_result_no_loop.csv" "tum_vio_result/$rosbag_name/vins-mono_ext/result_$i.log"
 
     echo -ne '\n'
 }
